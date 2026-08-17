@@ -8,6 +8,8 @@ to get.
 **The finding.** The best and worst places to spend on this funnel differ by **15×** — `signup` returns 31.1× the money put into it, `retain` returns 2.1×. A funnel chart cannot tell you that, and not because you are reading it wrong: it carries **no costs and no downstream volumes**, which are the only two facts that decide. Change one belief about what a fix costs — nothing about the users, not a single bar on the chart — and the order changes.
 <!-- /figures:finding -->
 
+![Ranked by return, with the scenario buttons that reorder it](images/demo.gif)
+
 ```bash
 npm run measure      # the funnel, with an interval on every rate
 npm run value        # what fixing each step is worth, and what it costs
