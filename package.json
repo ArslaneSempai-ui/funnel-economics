@@ -1,0 +1,24 @@
+{
+  "name": "funnel-economics",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The step that loses the most people is almost never the one worth fixing.",
+  "scripts": {
+    "start": "node src/server.ts",
+    "measure": "node src/funnel.ts",
+    "value": "node src/value.ts",
+    "sensitivity": "node src/sensitivity.ts",
+    "adversarial": "node src/adversarial.ts",
+    "baselines": "node src/baselines.ts",
+    "figures": "node src/readme.ts",
+    "pages": "tsc -p tsconfig.web.json && node src/pages.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && node src/readme.ts --check && node --test src/*.test.ts"
+  },
+  "engines": { "node": ">=24" },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^24.0.0"
+  }
+}
