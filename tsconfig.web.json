@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "outDir": "docs/js",
+    "noEmit": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "files": ["src/population.ts", "src/funnel.ts", "src/value.ts", "src/assumptions.ts", "src/interval.ts"]
+}

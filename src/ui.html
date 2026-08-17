@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Où fuit l'entonnoir, et ce que ça vaut</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fbfaf7'/%3E%3Crect x='2' y='4' width='12' height='1' fill='%23111'/%3E%3Crect x='2' y='7' width='12' height='1' fill='%23111'/%3E%3Crect x='2' y='11' width='12' height='2' fill='%23111'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/registre.css" />
+</head>
+<body>
+<main>
+  <div class="haut">
+    <div><h1 id="h1"></h1><p class="lede" id="lede"></p></div>
+    <div class="lang"><button id="fr" type="button">FR</button><button id="en" type="button">EN</button></div>
+  </div>
+
+  <div class="chiffres" id="entonnoir"></div>
+  <div id="verdict"></div>
+
+  <h2 id="titreValeur"></h2>
+  <div id="valeur"></div>
+
+  <h2 id="titreLeviers"></h2>
+  <div id="leviers"></div>
+
+  <h2 id="titreHyp"></h2>
+  <div id="hypotheses"></div>
+
+  <p class="renvoi" id="provenanceLegende"></p>
+</main>
+
+<script type="module">
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+/*
+ * One screen, two hosts.
+ *
+ * Run locally, this talks to the Node server. Published to GitHub Pages there is no server,
+ * so the same model runs in the browser and `window.LOCAL` answers the same routes with the
+ * same shapes. One file rather than two means the hosted demo cannot drift from the tool.
+ */
+const api = async (chemin, corps) =>
+  window.LOCAL ? window.LOCAL(chemin, corps)
+    : (await fetch(chemin, corps
+        ? { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(corps) } : {})).json();
+
+/*
+ * Both languages.
+ *
+ * The engine builds no sentences: it returns structures and the screen phrases them. A
+ * sentence built server-side exists in exactly one language, which is an architecture
+ * defect rather than a missing translation.
+ */
+const T = {
+  fr: {
+    h1: "Où fuit l'entonnoir, et ce que ça vaut",
+    lede: "Un graphique d'entonnoir ne peut pas dire quoi réparer : il ne contient ni les coûts ni les volumes en aval. Cet écran ajoute les deux.",
+
+    releve: "L'entonnoir mesuré",
+    colEtape: "étape", colEntres: "entrés", colConvertis: "convertis", colTaux: "taux",
+    colIntervalle: "intervalle 95 %", colPrecision: "± points",
+    boutEnBout: "de bout en bout",
+
+    pireTitre: "L'étape la plus faible",
+    pireIdentifiable: (e, t) => `<b>${e}</b> à ${t}. Aucun intervalle d'une autre étape ne l'atteint : le classement tient.`,
+    pireAmbigu: (e, t, autres) => `<b>${e}</b> à ${t} — mais ${autres} chevauche${autres.includes(",") ? "nt" : ""} son intervalle. <b>Cet échantillon ne peut pas dire laquelle est la pire</b>, et l'outil refuse de trancher.`,
+
+    titreValeur: "Ce que vaut chaque réparation",
+    valeurQuoi: "Chiffré en <b>rejouant l'entonnoir</b> avec l'amélioration appliquée, pas en multipliant des taux sur une page. Les deux ne coïncident que si chaque étape est indépendante des autres — ce qui est vrai dans ce modèle et faux dans la vie.",
+    colPoints: "points", colClients: "clients/an en plus", colRevenu: "revenu en plus",
+    colCout: "coût", colParEuro: "par $", colRangGraphe: "rang au graphique",
+
+    titreLeviers: "Le classement n'est pas dans l'entonnoir",
+    leviersQuoi: "Chaque levier a un coût et un plafond, et ce sont les deux nombres que personne n'écrit. Modifie-les : le graphique ci-dessus ne bougera pas d'un pixel, et l'ordre des priorités peut s'inverser.",
+    colLevier: "levier", colCoutLevier: "coût de la réparation", colPlafond: "points gagnables",
+    ordreAvant: "ordre actuel",
+    remise: "Revenir aux leviers de départ",
+
+    titreHyp: "Les hypothèses",
+    hypQuoi: "Tout est discutable et tout se modifie. Le revenu par client multiplie chaque étape à l'identique : il bouge tous les chiffres et ne change rien à l'ordre.",
+    annualRevenuePerCustomer: "Revenu annuel par client ($)",
+    costPerPaidVisit: "Coût d'une visite payante ($)",
+    monthsToShip: "Mois pour livrer une réparation",
+    defaut: "Revenir aux hypothèses de départ",
+
+    provenance: "Chaque chiffre de cette page est <b>mesuré</b> en faisant tourner le modèle, <b>supposé</b> parce que personne ici ne peut le connaître, ou <b>choisi</b> par moi. Aucun n'est retrouvé dans une source publique : les références de conversion sont publiées par ceux qui vendent la chose mesurée. Le README dit lequel est lequel, un par un.",
+  },
+  en: {
+    h1: "Where the funnel leaks, and what that is worth",
+    lede: "A funnel chart cannot tell you what to fix: it carries neither the costs nor the downstream volumes. This screen adds both.",
+
+    releve: "The funnel, measured",
+    colEtape: "step", colEntres: "entered", colConvertis: "converted", colTaux: "rate",
+    colIntervalle: "95 % interval", colPrecision: "± points",
+    boutEnBout: "end to end",
+
+    pireTitre: "The weakest step",
+    pireIdentifiable: (e, t) => `<b>${e}</b> at ${t}. No other step's interval reaches it, so the ranking holds.`,
+    pireAmbigu: (e, t, autres) => `<b>${e}</b> at ${t} — but ${autres} overlap${autres.includes(",") ? "" : "s"} its interval. <b>This sample cannot say which is worse</b>, and the tool refuses to.`,
+
+    titreValeur: "What each fix is worth",
+    valeurQuoi: "Priced by <b>re-running the funnel</b> with the improvement applied, not by multiplying rates on a page. The two agree only when every step is independent of every other — true in this model and false in life.",
+    colPoints: "points", colClients: "extra customers/yr", colRevenu: "extra revenue",
+    colCout: "cost", colParEuro: "per $", colRangGraphe: "chart rank",
+
+    titreLeviers: "The ranking is not in the funnel",
+    leviersQuoi: "Each lever has a cost and a ceiling, and those are the two numbers nobody writes down. Change them: the chart above will not move a pixel, and the order of priorities can invert.",
+    colLevier: "lever", colCoutLevier: "cost to fix", colPlafond: "points available",
+    ordreAvant: "current order",
+    remise: "Reset the levers",
+
+    titreHyp: "The assumptions",
+    hypQuoi: "All of it is arguable and all of it is editable. Revenue per customer scales every step equally: it moves every figure and changes nothing about the order.",
+    annualRevenuePerCustomer: "Annual revenue per customer ($)",
+    costPerPaidVisit: "Cost of one paid visit ($)",
+    monthsToShip: "Months to ship a fix",
+    defaut: "Reset the assumptions",
+
+    provenance: "Every figure on this page is <b>measured</b> by running the model, <b>assumed</b> because nobody here can know it, or <b>chosen</b> by me. None is retrieved from a public source: conversion benchmarks are published by the companies selling the thing being benchmarked. The README says which is which, one by one.",
+  },
+};
+
+let langue = localStorage.getItem("langue") ?? "fr";
+const t = () => T[langue];
+let etat = null, occupe = false;
+
+const nb = (n) => Math.round(n).toLocaleString("en-GB");
+const dollars = (n) => "$" + nb(n);
+const pc = (x) => (x * 100).toFixed(1) + " %";
+
+function blocEntonnoir() {
+  const L = t();
+  const lignes = etat.rates.map((r) => `<tr>
+    <td>${esc(r.step)}</td><td>${nb(r.entered)}</td><td>${nb(r.converted)}</td>
+    <td>${pc(r.rate)}</td><td>[${pc(r.low)} – ${pc(r.high)}]</td>
+    <td>${r.precision.toFixed(1)}</td></tr>`).join("");
+
+  const e = etat.endToEnd;
+  $("#entonnoir").innerHTML = `<section class="feuillet">
+    <div class="titre">${esc(L.releve)}</div>
+    <div class="defile"><table><thead><tr>
+      <th>${esc(L.colEtape)}</th><th>${esc(L.colEntres)}</th><th>${esc(L.colConvertis)}</th>
+      <th>${esc(L.colTaux)}</th><th>${esc(L.colIntervalle)}</th><th>${esc(L.colPrecision)}</th>
+    </tr></thead><tbody>${lignes}</tbody></table></div>
+    <div class="ligne total">
+      <span class="intitule">${esc(L.boutEnBout)}</span>
+      <span class="valeur">${nb(e.retained)} / ${nb(e.entered)} — ${pc(e.rate)}</span>
+    </div>
+  </section>`;
+}
+
+function blocVerdict() {
+  const L = t();
+  const w = etat.worst;
+  const autres = w.tied.map((x) => x.step).join(", ");
+  $("#verdict").innerHTML = `<div class="renvoi ${w.identifiable ? "" : "attention"}">
+    <b>${esc(L.pireTitre)}.</b> ${w.identifiable
+      ? L.pireIdentifiable(esc(w.worst.step), pc(w.worst.rate))
+      : L.pireAmbigu(esc(w.worst.step), pc(w.worst.rate), esc(autres))}
+  </div>`;
+}
+
+function blocValeur() {
+  const L = t();
+  $("#titreValeur").textContent = L.titreValeur;
+  const lignes = etat.priced.map((p) => `<tr${p.valeurRang === 1 ? ' class="ici"' : ""}>
+    <td>${esc(p.step)}</td><td>+${(p.points * 100).toFixed(0)}</td>
+    <td>${nb(p.extraRetained)}</td><td>${dollars(p.extraRevenue)}</td>
+    <td>${dollars(p.cost)}</td><td><b>${p.perDollar.toFixed(2)}×</b></td>
+    <td>${p.leakRank}</td></tr>`).join("");
+
+  $("#valeur").innerHTML = `<div class="feuillet">
+    <div class="quoi">${L.valeurQuoi}</div>
+    <div class="defile"><table><thead><tr>
+      <th>${esc(L.colEtape)}</th><th>${esc(L.colPoints)}</th><th>${esc(L.colClients)}</th>
+      <th>${esc(L.colRevenu)}</th><th>${esc(L.colCout)}</th><th>${esc(L.colParEuro)}</th>
+      <th>${esc(L.colRangGraphe)}</th></tr></thead><tbody>${lignes}</tbody></table></div>
+  </div>`;
+}
+
+function blocLeviers() {
+  const L = t();
+  $("#titreLeviers").textContent = L.titreLeviers;
+
+  const champs = etat.priced.map((p) => {
+    const l = etat.levers[p.step];
+    return `<div>
+      <label for="cost-${p.step}">${esc(p.step)} — ${esc(L.colCoutLevier)}</label>
+      <input type="number" id="cost-${p.step}" data-step="${p.step}" data-champ="cost"
+        value="${Math.round(l.cost)}" min="1000" max="5000000" step="10000" />
+      <label for="ceil-${p.step}" style="margin-top:8px">${esc(L.colPlafond)}</label>
+      <input type="number" id="ceil-${p.step}" data-step="${p.step}" data-champ="ceiling"
+        value="${(l.ceiling * 100).toFixed(1)}" min="0.1" max="40" step="0.5" />
+    </div>`;
+  }).join("");
+
+  $("#leviers").innerHTML = `<div class="feuillet">
+    <div class="quoi">${L.leviersQuoi}</div>
+    <div class="grille">${champs}</div>
+    <div class="ligne total">
+      <span class="intitule">${esc(L.ordreAvant)}</span>
+      <span class="valeur">${etat.priced.map((p) => esc(p.step)).join(" → ")}</span>
+    </div>
+    <button class="b" id="remiseLeviers" type="button">${esc(L.remise)}</button>
+  </div>`;
+
+  for (const input of document.querySelectorAll("#leviers input")) {
+    input.onchange = (e) => {
+      const el = e.target;
+      const brut = Number(el.value);
+      const valeur = el.dataset.champ === "ceiling" ? brut / 100 : brut;
+      envoyer("/api/leviers", { step: el.dataset.step, champ: el.dataset.champ, valeur });
+    };
+  }
+  $("#remiseLeviers").onclick = () => envoyer("/api/leviers", { remise: true });
+}
+
+function blocHypotheses() {
+  const L = t();
+  $("#titreHyp").textContent = L.titreHyp;
+  const champs = Object.keys(etat.bounds).map((cle) => {
+    const [min, max] = etat.bounds[cle];
+    return `<div><label for="${cle}">${esc(L[cle])}</label>
+      <input type="number" id="${cle}" value="${etat.assumptions[cle]}" min="${min}" max="${max}" /></div>`;
+  }).join("");
+
+  $("#hypotheses").innerHTML = `<div class="feuillet">
+    <div class="quoi">${esc(L.hypQuoi)}</div>
+    <div class="grille">${champs}</div>
+    <button class="b" id="defaut" type="button">${esc(L.defaut)}</button>
+  </div>`;
+
+  for (const cle of Object.keys(etat.bounds)) {
+    $(`#${cle}`).onchange = (e) => envoyer("/api/hypotheses", { [cle]: Number(e.target.value) });
+  }
+  $("#defaut").onclick = () => envoyer("/api/hypotheses", { remise: true });
+}
+
+function dessiner() {
+  const L = t();
+  document.documentElement.lang = langue;
+  $("#h1").textContent = L.h1;
+  $("#lede").textContent = L.lede;
+  $("#provenanceLegende").innerHTML = L.provenance;
+  $("#fr").className = langue === "fr" ? "on" : "";
+  $("#en").className = langue === "en" ? "on" : "";
+  blocEntonnoir(); blocVerdict(); blocValeur(); blocLeviers(); blocHypotheses();
+}
+
+async function envoyer(chemin, corps) {
+  if (occupe) return;
+  occupe = true;
+  try { etat = await api(chemin, corps ?? {}); dessiner(); }
+  finally { occupe = false; }
+}
+
+for (const l of ["fr", "en"]) {
+  $(`#${l}`).onclick = () => { langue = l; localStorage.setItem("langue", l); dessiner(); };
+}
+
+etat = await api("/api/etat");
+dessiner();
+</script>
+</body>
+</html>
