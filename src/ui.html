@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -71,12 +71,31 @@ const T = {
     colPoints: "points", colClients: "clients/an en plus", colRevenu: "revenu en plus",
     colCout: "coût", colParEuro: "par $", colRangGraphe: "rang au graphique",
 
+    voirChiffres: "Voir tous les chiffres",
     titreLeviers: "Le classement n'est pas dans l'entonnoir",
     leviersQuoi: "Chaque levier a un coût et un plafond, et ce sont les deux nombres que personne n'écrit. Modifie-les : le graphique ci-dessus ne bougera pas d'un pixel, et l'ordre des priorités peut s'inverser.",
     colLevier: "levier", colCoutLevier: "coût de la réparation", colPlafond: "points gagnables",
     ordreAvant: "ordre actuel",
     remise: "Revenir aux leviers de départ",
 
+    suiteEntonnoir: "Un graphique s'arrête ici. Il montre des taux, et un lecteur en conclut qu'il faut réparer le plus faible. Mais un taux ne dit ni ce que la réparation coûte, ni combien de gens en profitent.",
+    suiteValeur: (best, worst, x) => `<b>Le meilleur et le pire endroit où dépenser diffèrent d'un facteur ${x}</b> — ${best}× contre ${worst}×. Rien de tout ça n'est sur le graphique : ni les coûts, ni les volumes en aval. <em>Et ce classement n'appartient même pas à l'entonnoir. Essaie ci-dessous.</em>`,
+    ordreDepart: "ordre de départ", ordreMaintenant: "ordre maintenant",
+    suiteChange: "<b>L'ordre vient de changer.</b> Aucun chiffre de l'entonnoir n'a bougé — pas un taux, pas un intervalle, pas une barre. Seule une conviction sur ce qu'une réparation coûte a changé. <em>Le classement n'était jamais dans l'entonnoir : il est dans les leviers, et les leviers sont la partie que personne n'écrit.</em>",
+    suitePasChange: "L'ordre n'a pas bougé pour l'instant. Essaie « la page est épuisée » : c'est la situation la plus courante et elle suffit à tout renverser.",
+    reglageFin: "Régler les leviers à la main",
+    sc: {
+      depart: "Les leviers de départ",
+      pageEpuisee: "La page a déjà été refaite deux fois",
+      onboardingFacile: "L'onboarding est un chantier connu",
+      retentionUrgente: "La rétention est la priorité du board",
+    },
+    scq: {
+      depart: "revenir au point de comparaison",
+      pageEpuisee: "signup : 90 000 $ pour 1 point au lieu de 40 000 $ pour 4",
+      onboardingFacile: "activate : 40 000 $ au lieu de 120 000 $",
+      retentionUrgente: "retain : budget doublé, plafond doublé",
+    },
     titreHyp: "Les hypothèses",
     hypQuoi: "Tout est discutable et tout se modifie. Le revenu par client multiplie chaque étape à l'identique : il bouge tous les chiffres et ne change rien à l'ordre.",
     annualRevenuePerCustomer: "Revenu annuel par client ($)",
@@ -104,12 +123,31 @@ const T = {
     colPoints: "points", colClients: "extra customers/yr", colRevenu: "extra revenue",
     colCout: "cost", colParEuro: "per $", colRangGraphe: "chart rank",
 
+    voirChiffres: "Show every figure",
     titreLeviers: "The ranking is not in the funnel",
     leviersQuoi: "Each lever has a cost and a ceiling, and those are the two numbers nobody writes down. Change them: the chart above will not move a pixel, and the order of priorities can invert.",
     colLevier: "lever", colCoutLevier: "cost to fix", colPlafond: "points available",
     ordreAvant: "current order",
     remise: "Reset the levers",
 
+    suiteEntonnoir: "A chart stops here. It shows rates, and a reader concludes the weakest one needs fixing. But a rate says neither what the fix costs nor how many people benefit from it.",
+    suiteValeur: (best, worst, x) => `<b>The best and worst places to spend differ by a factor of ${x}</b> — ${best}× against ${worst}×. None of that is on the chart: no costs, no downstream volumes. <em>And the ranking does not even belong to the funnel. Try it below.</em>`,
+    ordreDepart: "starting order", ordreMaintenant: "order now",
+    suiteChange: "<b>The order just changed.</b> Not one figure in the funnel moved — not a rate, not an interval, not a bar. Only a belief about what a fix costs. <em>The ranking was never in the funnel: it is in the levers, and the levers are the part nobody writes down.</em>",
+    suitePasChange: "The order has not moved yet. Try \"the page is tapped out\" — it is the most ordinary situation of the four and it is enough to invert everything.",
+    reglageFin: "Set the levers by hand",
+    sc: {
+      depart: "The starting levers",
+      pageEpuisee: "The landing page has been rebuilt twice",
+      onboardingFacile: "Onboarding is a known piece of work",
+      retentionUrgente: "Retention is the board's priority",
+    },
+    scq: {
+      depart: "back to the point of comparison",
+      pageEpuisee: "signup: $90,000 for 1 point rather than $40,000 for 4",
+      onboardingFacile: "activate: $40,000 rather than $120,000",
+      retentionUrgente: "retain: budget doubled, ceiling doubled",
+    },
     titreHyp: "The assumptions",
     hypQuoi: "All of it is arguable and all of it is editable. Revenue per customer scales every step equally: it moves every figure and changes nothing about the order.",
     annualRevenuePerCustomer: "Annual revenue per customer ($)",
@@ -121,13 +159,23 @@ const T = {
   },
 };
 
-let langue = localStorage.getItem("langue") ?? "fr";
+let langue = localStorage.getItem("langue") ?? "en";
 const t = () => T[langue];
 let etat = null, occupe = false;
 
 const nb = (n) => Math.round(n).toLocaleString("en-GB");
 const dollars = (n) => "$" + nb(n);
 const pc = (x) => (x * 100).toFixed(1) + " %";
+
+/*
+ * A number typed by a human, read tolerantly.
+ *
+ * `<input type="number">` renders its value through the browser's locale, so 2.4 appeared
+ * as "2,4" on an English page — a visible inconsistency on a screen whose whole argument
+ * is that the figures are trustworthy. These are text fields now, and both separators are
+ * accepted because both are what people type.
+ */
+const lire = (v) => Number(String(v).replace(/\s/g, "").replace(",", "."));
 
 function blocEntonnoir() {
   const L = t();
@@ -158,62 +206,116 @@ function blocVerdict() {
     <b>${esc(L.pireTitre)}.</b> ${w.identifiable
       ? L.pireIdentifiable(esc(w.worst.step), pc(w.worst.rate))
       : L.pireAmbigu(esc(w.worst.step), pc(w.worst.rate), esc(autres))}
-  </div>`;
+  </div>
+  <div class="suite">${L.suiteEntonnoir}</div>`;
 }
 
 function blocValeur() {
   const L = t();
   $("#titreValeur").textContent = L.titreValeur;
-  const lignes = etat.priced.map((p) => `<tr${p.valeurRang === 1 ? ' class="ici"' : ""}>
+
+  /*
+   * Bars, not columns.
+   *
+   * The finding is a fifteen-fold gap between the best and worst place to spend. Rendered
+   * as a column of numbers it has to be read and subtracted; rendered as bars it is
+   * visible before anybody reads anything, and the gap is the whole point of the tool.
+   *
+   * The table underneath keeps every figure for whoever wants to check the arithmetic —
+   * the bar answers "which", the table answers "how do you know".
+   */
+  const max = Math.max(...etat.priced.map((p) => p.perDollar));
+  const jauges = etat.priced.map((p, i) => `<div class="jauge${i === 0 ? " gagnant" : ""}">
+    <div class="etiquette">
+      <b>${esc(p.step)} <small>— ${esc(etat.levers[p.step].what)}</small></b>
+      <span class="valeur">${p.perDollar.toFixed(2)}×</span>
+    </div>
+    <div class="piste"><div class="remplissage" style="width:${Math.max(2, (p.perDollar / max) * 100).toFixed(1)}%"></div></div>
+  </div>`).join("");
+
+  const lignes = etat.priced.map((p, i) => `<tr${i === 0 ? ' class="ici"' : ""}>
     <td>${esc(p.step)}</td><td>+${(p.points * 100).toFixed(0)}</td>
     <td>${nb(p.extraRetained)}</td><td>${dollars(p.extraRevenue)}</td>
     <td>${dollars(p.cost)}</td><td><b>${p.perDollar.toFixed(2)}×</b></td>
     <td>${p.leakRank}</td></tr>`).join("");
 
-  $("#valeur").innerHTML = `<div class="feuillet">
+  const best = etat.priced[0], worst = etat.priced[etat.priced.length - 1];
+
+  $("#valeur").innerHTML = `<div class="feuillet"><div class="corps">
     <div class="quoi">${L.valeurQuoi}</div>
-    <div class="defile"><table><thead><tr>
-      <th>${esc(L.colEtape)}</th><th>${esc(L.colPoints)}</th><th>${esc(L.colClients)}</th>
-      <th>${esc(L.colRevenu)}</th><th>${esc(L.colCout)}</th><th>${esc(L.colParEuro)}</th>
-      <th>${esc(L.colRangGraphe)}</th></tr></thead><tbody>${lignes}</tbody></table></div>
-  </div>`;
+    ${jauges}
+    <details>
+      <summary>${esc(L.voirChiffres)}</summary>
+      <div class="defile"><table><thead><tr>
+        <th>${esc(L.colEtape)}</th><th>${esc(L.colPoints)}</th><th>${esc(L.colClients)}</th>
+        <th>${esc(L.colRevenu)}</th><th>${esc(L.colCout)}</th><th>${esc(L.colParEuro)}</th>
+        <th>${esc(L.colRangGraphe)}</th></tr></thead><tbody>${lignes}</tbody></table></div>
+    </details>
+    <div class="suite">${L.suiteValeur(best.perDollar.toFixed(1), worst.perDollar.toFixed(1),
+      (best.perDollar / worst.perDollar).toFixed(0))}</div>
+  </div></div>`;
 }
 
 function blocLeviers() {
   const L = t();
   $("#titreLeviers").textContent = L.titreLeviers;
 
+  /*
+   * Named situations rather than empty number fields.
+   *
+   * The finding is that the ranking moves when a belief about a lever moves, and an
+   * interface that requires typing two numbers into two boxes before anything happens does
+   * not demonstrate it — it asks the reader to take it on trust and then do some data
+   * entry. Each button is a sentence somebody would actually say in a planning meeting.
+   */
+  const boutons = etat.scenarios.map((sc) => `<button type="button" class="scenario${sc.actif ? " on" : ""}" data-sc="${esc(sc.id)}">
+    ${esc(L.sc[sc.id] ?? sc.id)}<small>${esc(L.scq[sc.id] ?? "")}</small></button>`).join("");
+
   const champs = etat.priced.map((p) => {
     const l = etat.levers[p.step];
     return `<div>
       <label for="cost-${p.step}">${esc(p.step)} — ${esc(L.colCoutLevier)}</label>
-      <input type="number" id="cost-${p.step}" data-step="${p.step}" data-champ="cost"
-        value="${Math.round(l.cost)}" min="1000" max="5000000" step="10000" />
+      <input type="text" inputmode="decimal" id="cost-${p.step}" data-step="${p.step}" data-champ="cost"
+        value="${Math.round(l.cost)}" />
       <label for="ceil-${p.step}" style="margin-top:8px">${esc(L.colPlafond)}</label>
-      <input type="number" id="ceil-${p.step}" data-step="${p.step}" data-champ="ceiling"
-        value="${(l.ceiling * 100).toFixed(1)}" min="0.1" max="40" step="0.5" />
+      <input type="text" inputmode="decimal" id="ceil-${p.step}" data-step="${p.step}" data-champ="ceiling"
+        value="${(l.ceiling * 100).toFixed(1)}" />
     </div>`;
   }).join("");
 
-  $("#leviers").innerHTML = `<div class="feuillet">
-    <div class="quoi">${L.leviersQuoi}</div>
-    <div class="grille">${champs}</div>
-    <div class="ligne total">
-      <span class="intitule">${esc(L.ordreAvant)}</span>
-      <span class="valeur">${etat.priced.map((p) => esc(p.step)).join(" → ")}</span>
-    </div>
-    <button class="b" id="remiseLeviers" type="button">${esc(L.remise)}</button>
-  </div>`;
+  const ordre = (xs) => xs.map((x) => esc(x)).join(" → ");
+  const change = etat.ordreDepart.join() !== etat.priced.map((p) => p.step).join();
 
+  $("#leviers").innerHTML = `<div class="feuillet"><div class="corps">
+    <div class="quoi">${L.leviersQuoi}</div>
+    <div class="scenarios">${boutons}</div>
+
+    <div class="avant-apres">
+      <div><div class="quand">${esc(L.ordreDepart)}</div>
+        <div class="ordre">${ordre(etat.ordreDepart)}</div></div>
+      <div class="${change ? "change" : ""}"><div class="quand">${esc(L.ordreMaintenant)}</div>
+        <div class="ordre">${ordre(etat.priced.map((p) => p.step))}</div></div>
+    </div>
+
+    <div class="suite">${change ? L.suiteChange : L.suitePasChange}</div>
+
+    <details style="margin-top:18px">
+      <summary class="quoi" style="cursor:pointer">${esc(L.reglageFin)}</summary>
+      <div class="grille" style="margin-top:12px">${champs}</div>
+    </details>
+  </div></div>`;
+
+  for (const b of document.querySelectorAll(".scenario")) {
+    b.onclick = () => envoyer("/api/leviers", { scenario: b.dataset.sc });
+  }
   for (const input of document.querySelectorAll("#leviers input")) {
     input.onchange = (e) => {
       const el = e.target;
-      const brut = Number(el.value);
+      const brut = lire(el.value);
       const valeur = el.dataset.champ === "ceiling" ? brut / 100 : brut;
       envoyer("/api/leviers", { step: el.dataset.step, champ: el.dataset.champ, valeur });
     };
   }
-  $("#remiseLeviers").onclick = () => envoyer("/api/leviers", { remise: true });
 }
 
 function blocHypotheses() {
@@ -222,17 +324,18 @@ function blocHypotheses() {
   const champs = Object.keys(etat.bounds).map((cle) => {
     const [min, max] = etat.bounds[cle];
     return `<div><label for="${cle}">${esc(L[cle])}</label>
-      <input type="number" id="${cle}" value="${etat.assumptions[cle]}" min="${min}" max="${max}" /></div>`;
+      <input type="text" inputmode="decimal" id="${cle}" value="${etat.assumptions[cle]}"
+        data-min="${min}" data-max="${max}" /></div>`;
   }).join("");
 
-  $("#hypotheses").innerHTML = `<div class="feuillet">
+  $("#hypotheses").innerHTML = `<div class="feuillet"><div class="corps">
     <div class="quoi">${esc(L.hypQuoi)}</div>
     <div class="grille">${champs}</div>
     <button class="b" id="defaut" type="button">${esc(L.defaut)}</button>
-  </div>`;
+  </div></div>`;
 
   for (const cle of Object.keys(etat.bounds)) {
-    $(`#${cle}`).onchange = (e) => envoyer("/api/hypotheses", { [cle]: Number(e.target.value) });
+    $(`#${cle}`).onchange = (e) => envoyer("/api/hypotheses", { [cle]: lire(e.target.value) });
   }
   $("#defaut").onclick = () => envoyer("/api/hypotheses", { remise: true });
 }

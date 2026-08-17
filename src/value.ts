@@ -169,6 +169,33 @@ export function compare(
   };
 }
 
+/**
+ * Named situations a reader can put the tool in with one click.
+ *
+ * The finding is that the ranking moves when a belief about a lever moves. An interface
+ * that requires typing two numbers into two boxes before anything happens does not
+ * demonstrate that — it asks the reader to take it on trust and then do data entry.
+ *
+ * Each of these is a sentence somebody would actually say in a planning meeting, and each
+ * is a real position rather than a value picked to make the order flip. The page reports
+ * what happens, including when nothing does.
+ */
+export const SCENARIOS: { id: string; levers: Partial<Levers> }[] = [
+  { id: "depart", levers: {} },
+  {
+    id: "pageEpuisee",
+    levers: { signup: { cost: 90_000, ceiling: 0.01, what: "a landing page already rebuilt twice" } },
+  },
+  {
+    id: "onboardingFacile",
+    levers: { activate: { cost: 40_000, ceiling: 0.10, what: "an onboarding flow the team has done before" } },
+  },
+  {
+    id: "retentionUrgente",
+    levers: { retain: { cost: 520_000, ceiling: 0.16, what: "retention with a doubled budget and a doubled ceiling" } },
+  },
+];
+
 /** The sentence the tool exists to produce. */
 export function verdict(priced: Priced[]): string {
   const best = priced[0]!;
