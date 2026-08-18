@@ -56,6 +56,19 @@ export function etat() {
     /* The order under the starting levers, so the screen can show the change rather than
      * asking the reader to have memorised the previous state. */
     ordreDepart: priceAll(SCENARIO, assumptions, LEVERS).map((p) => p.step),
+    /*
+     * The ranking under every scenario at once.
+     *
+     * The finding of this tool is that the order is not stable, and an order that moves
+     * cannot be shown one state at a time: a reader asked to click four scenarios and
+     * remember is a reader who will conclude from the first. Four rankings sent together
+     * let the screen draw the crossing, which is the finding itself.
+     */
+    classements: SCENARIOS.map((s2) => ({
+      id: s2.id,
+      rangs: priceAll(SCENARIO, assumptions, { ...LEVERS, ...s2.levers })
+        .map((p, i) => ({ etape: p.step, rang: i + 1, parDollar: p.perDollar })),
+    })),
     scenarios: SCENARIOS.map((s2) => ({ id: s2.id, actif: s2.id === scenario })),
     levers,
     assumptions,

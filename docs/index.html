@@ -38,12 +38,13 @@ pixel. <a href="https://github.com/ArslaneSempai-ui/funnel-economics">Source and
 <script type="module">
 import { generate, SCENARIO } from "./js/population.js";
 import { measure, worstStep, endToEnd } from "./js/funnel.js";
-import { priceAll, LEVERS } from "./js/value.js";
+import { priceAll, LEVERS, SCENARIOS } from "./js/value.js";
 import { ASSUMPTIONS, BOUNDS } from "./js/assumptions.js";
 
 const users = generate();
 let assumptions = { ...ASSUMPTIONS };
 let levers = structuredClone(LEVERS);
+let scenario = "depart";
 
 const LEVER_BOUNDS = { cost: [1000, 5000000], ceiling: [0.001, 0.40] };
 
@@ -55,6 +56,22 @@ const etat = () => {
     endToEnd: endToEnd(users),
     worst: worstStep(rates),
     priced: priced.map((p, i) => ({ ...p, valeurRang: i + 1 })),
+    /*
+     * Trois champs que ce shim ne renvoyait pas.
+     *
+     * Sans eux, l'écran publié rendait une section entièrement vide — celle qui porte la
+     * trouvaille de l'outil, et que la bannière invite le lecteur à manipuler. Le serveur
+     * local les fournissait, la démo non, et rien ne comparait les deux : c'est exactement
+     * la dérive que ce fichier est censé rendre impossible, arrivée dans le fichier
+     * lui-même.
+     */
+    ordreDepart: priceAll(SCENARIO, assumptions, LEVERS).map((p) => p.step),
+    scenarios: SCENARIOS.map((s2) => ({ id: s2.id, actif: s2.id === scenario })),
+    classements: SCENARIOS.map((s2) => ({
+      id: s2.id,
+      rangs: priceAll(SCENARIO, assumptions, { ...LEVERS, ...s2.levers })
+        .map((p, i) => ({ etape: p.step, rang: i + 1, parDollar: p.perDollar })),
+    })),
     levers, assumptions, bounds: BOUNDS,
   };
 };
@@ -74,7 +91,11 @@ window.LOCAL = async (chemin, corps) => {
   }
 
   if (chemin === "/api/leviers") {
-    if (corps.remise) levers = structuredClone(LEVERS);
+    if (corps.remise) { levers = structuredClone(LEVERS); scenario = "depart"; }
+    else if (typeof corps.scenario === "string") {
+      const sc = SCENARIOS.find((x) => x.id === corps.scenario);
+      if (sc) { levers = { ...structuredClone(LEVERS), ...structuredClone(sc.levers) }; scenario = sc.id; }
+    }
     else {
       const { step, champ, valeur } = corps;
       if (levers[step] && (champ === "cost" || champ === "ceiling") && Number.isFinite(valeur)) {
