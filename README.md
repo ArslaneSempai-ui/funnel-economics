@@ -246,7 +246,7 @@ of that sentence does the work, and it is the half nobody writes down.
 travels is the method: price the fix, not the leak; check whether the sample can rank at all;
 split by segment before comparing any aggregate across time.
 
-**Not "a 15× spread means the chart is useless."** On this funnel the chart happens to point
+**Not "a <!--p:funnel.facteur-->15<!--/p-->× spread means the chart is useless."** On this funnel the chart happens to point
 at the right step. The analysis tells you *that* it does — and the sweep shows how little has
 to change before it stops.
 
