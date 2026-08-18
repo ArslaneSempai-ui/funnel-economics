@@ -1,0 +1,7 @@
+{
+  "images": [
+    { "sortie": "images/demo.gif", "type": "gif", "taille": [900, 780], "echelle": 1, "duree": 1300,
+      "fenetre": [900, 2700], "depart": 1620, "hauteurUtile": 780,
+      "scenes": [ [], ["[data-sc=pageEpuisee]!"], ["[data-sc=onboardingFacile]!"], ["[data-sc=retentionUrgente]!"] ] }
+  ]
+}

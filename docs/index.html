@@ -454,7 +454,16 @@ function blocLeviers() {
    * de se souvenir conclura du premier. La figure porte donc ce que les boutons ne
    * peuvent pas porter, et les boutons gardent ce que la figure ne dit pas : les montants.
    */
-  const etapes = etat.priced.map((p) => p.step);
+  /*
+   * L'ordre de départ, pas le classement courant.
+   *
+   * Les séries étaient construites depuis `etat.priced`, qui se réordonne quand on change
+   * de scénario. À égalité d'amplitude — signup et subscribe bougent tous deux de deux
+   * rangs — c'était l'ordre de la liste qui départageait, donc la ligne mise en avant
+   * sautait d'un levier à l'autre selon le bouton actif. La figure montre les mêmes
+   * données dans les quatre cas : elle doit se dessiner à l'identique.
+   */
+  const etapes = etat.ordreDepart;
   const figRangs = rangs({
     colonnes: etat.classements.map((c) => ({ titre: L.scCourt[c.id] ?? c.id })),
     series: etapes.map((etape) => ({
