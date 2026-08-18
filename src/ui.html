@@ -30,7 +30,7 @@
 </main>
 
 <script type="module">
-import { barres, brancher } from "/graphes.js";
+import { barres, rangs, brancher } from "/graphes.js";
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -97,6 +97,21 @@ const T = {
       onboardingFacile: "L'onboarding est un chantier connu",
       retentionUrgente: "La rétention est la priorité du board",
     },
+    scCourt: {
+      depart: "au départ", pageEpuisee: "page épuisée",
+      onboardingFacile: "onboarding facile", retentionUrgente: "rétention urgente",
+    },
+    figRangsTitre: "Le rang de chaque levier, scénario par scénario",
+    figRangsAria: "Quatre trajectoires de rang, une par levier, suivies à travers quatre scénarios. "
+      + "Le classement change d'un scénario à l'autre.",
+    rangCourt: (r) => r === 1 ? "1er" : r + "e",
+    rangsSuite: (levier, de, a) => `Un seul levier change de prix, et l'ordre des priorités s'inverse : `
+      + `<b>${levier} passe du ${de} au ${a} rang</b>. Le classement ne vit pas dans l'entonnoir, `
+      + `il vit dans le coût des leviers — que personne n'écrit.`,
+    rangsStable: "Le classement tient dans les quatre scénarios : l'ordre des priorités ne dépend "
+      + "pas de ces croyances-là.",
+    rangsReserve: "Un rang n'a pas d'échelle. Deux leviers séparés d'un cheveu s'y lisent comme "
+      + "premier et deuxième — la valeur est au survol de chaque point.",
     scq: {
       depart: "revenir au point de comparaison",
       pageEpuisee: "signup : 90 000 $ pour 1 point au lieu de 40 000 $ pour 4",
@@ -155,6 +170,21 @@ const T = {
       onboardingFacile: "Onboarding is a known piece of work",
       retentionUrgente: "Retention is the board's priority",
     },
+    scCourt: {
+      depart: "as it stands", pageEpuisee: "landing page spent",
+      onboardingFacile: "onboarding easy", retentionUrgente: "retention urgent",
+    },
+    figRangsTitre: "Where each lever ranks, scenario by scenario",
+    figRangsAria: "Four rank trajectories, one per lever, followed across four scenarios. "
+      + "The ranking changes from one scenario to the next.",
+    rangCourt: (r) => r === 1 ? "1st" : r === 2 ? "2nd" : r === 3 ? "3rd" : r + "th",
+    rangsSuite: (levier, de, a) => `One lever changes price and the order of priorities inverts: `
+      + `<b>${levier} falls from ${de} to ${a}</b>. The ranking does not live in the funnel, `
+      + `it lives in what the levers cost — which nobody writes down.`,
+    rangsStable: "The ranking holds across all four scenarios: the order of priorities does not "
+      + "depend on those beliefs.",
+    rangsReserve: "A rank has no scale. Two levers a hair apart read as first and second — "
+      + "the value is on each point, on hover.",
     scq: {
       depart: "back to the point of comparison",
       pageEpuisee: "signup: $90,000 for 1 point rather than $40,000 for 4",
@@ -336,8 +366,48 @@ function blocLeviers() {
   const ordre = (xs) => xs.map((x) => esc(x)).join(" → ");
   const change = etat.ordreDepart.join() !== etat.priced.map((p) => p.step).join();
 
+  /*
+   * Les quatre scénarios d'un coup.
+   *
+   * Les boutons en dessous font toujours leur travail — ils changent le tableau et les
+   * montants. Mais la trouvaille n'est dans aucun des quatre états : elle est dans le
+   * passage de l'un à l'autre, et un lecteur à qui l'on demande de cliquer quatre fois et
+   * de se souvenir conclura du premier. La figure porte donc ce que les boutons ne
+   * peuvent pas porter, et les boutons gardent ce que la figure ne dit pas : les montants.
+   */
+  const etapes = etat.priced.map((p) => p.step);
+  const figRangs = rangs({
+    colonnes: etat.classements.map((c) => ({ titre: L.scCourt[c.id] ?? c.id })),
+    series: etapes.map((etape) => ({
+      nom: etape,
+      rangs: etat.classements.map((c) => {
+        const r = c.rangs.find((x) => x.etape === etape);
+        return { rang: r?.rang ?? 0, valeur: r?.parDollar };
+      }),
+    })),
+    fmt: (v) => `${v.toFixed(1)}× ${L.colParEuro}`,
+    nomRang: L.rangCourt,
+    aria: L.figRangsAria,
+  });
+
+  /* La phrase sous la figure nomme le levier qui bouge, sans le choisir à la main : c'est
+   * celui dont l'écart de rang est le plus grand. S'il n'y en a pas, la figure dit que
+   * rien ne bouge, et c'est un résultat aussi. */
+  const parcours = etapes.map((etape) => {
+    const rs = etat.classements.map((c) => c.rangs.find((x) => x.etape === etape)?.rang ?? 0);
+    return { etape, min: Math.min(...rs), max: Math.max(...rs) };
+  });
+  const bouge = parcours.slice().sort((a, b) => (b.max - b.min) - (a.max - a.min))[0];
+  const suiteRangs = bouge && bouge.max > bouge.min
+    ? L.rangsSuite(esc(bouge.etape), L.rangCourt(bouge.min), L.rangCourt(bouge.max))
+    : L.rangsStable;
+
   $("#leviers").innerHTML = `<div class="feuillet"><div class="corps">
     <div class="quoi">${L.leviersQuoi}</div>
+
+    <div class="titre-fig">${esc(L.figRangsTitre)}</div>${figRangs}
+    <div class="suite">${suiteRangs} <em>${esc(L.rangsReserve)}</em></div>
+
     <div class="scenarios">${boutons}</div>
 
     <div class="avant-apres">
