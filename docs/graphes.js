@@ -617,7 +617,7 @@ export function histogramme({ bandes, seuil, fmt = String, fmtX = String, legend
  *          lignes: Array<{nom:string, cellules:Array<boolean|null>, instables?:boolean[], bout?:string}>,
  *          legende?: Array<{texte:string, etat:string}>, aria:string}} o
  */
-export function grille({ colonnes, lignes, legende, aria }) {
+export function grille({ colonnes, lignes, legende, aria, choix = false, iciTexte }) {
   if (!colonnes?.length || !lignes?.length) return "";
   const cols = colonnes.map((c) => (typeof c === "string" ? { nom: c } : c));
   const GAUCHE = 122, DROITE = 54, HAUT = 16, LIGNE = 26, CELL = 18;
@@ -642,9 +642,24 @@ export function grille({ colonnes, lignes, legende, aria }) {
   const hauteur = HAUT + lignes.length * LIGNE + 22 + rangs * RANG_LEG + (rangs ? 6 : 0);
 
   let svg = "";
+  /*
+   * La ligne retenue, marquée sur toute la largeur.
+   *
+   * Quand les lignes *sont* les choix — une version par ligne —, deux listes déroulantes
+   * et un bouton posés à côté demandent au lecteur de refaire à la main le lien avec la
+   * figure qu'il regarde déjà.
+   */
+  lignes.forEach((l, i) => {
+    if (!l.ici) return;
+    const y = HAUT + i * LIGNE;
+    svg += `<rect class="grille-ici" x="${GAUCHE - 116}" y="${arr(y - 4)}" width="${arr(L - GAUCHE + 116 - 8)}" height="${CELL + 8}" />`;
+    if (iciTexte) {
+      svg += `<text class="marche-ici-mot" x="${L - DROITE + 10}" y="${y - 8}">${ech(iciTexte)}</text>`;
+    }
+  });
   lignes.forEach((l, i) => {
     const y = HAUT + i * LIGNE;
-    svg += `<text class="grille-nom" x="${GAUCHE - 10}" y="${y + CELL - 4}" text-anchor="end">${ech(l.nom)}</text>`;
+    svg += `<text class="grille-nom${l.ici ? " ici" : ""}" x="${GAUCHE - 10}" y="${y + CELL - 4}" text-anchor="end">${ech(l.nom)}</text>`;
     l.cellules.forEach((v, j) => {
       const avant = i > 0 ? lignes[i - 1].cellules[j] : null;
       /*
@@ -676,6 +691,16 @@ export function grille({ colonnes, lignes, legende, aria }) {
     if (j % saut && j !== cols.length - 1) return;
     svg += `<text class="grille-num" x="${arr(GAUCHE + j * pas + pas / 2)}" y="${yNum}" text-anchor="middle">${j + 1}</text>`;
   });
+
+  /* En dernier, donc au-dessus : c'est la ligne entière qui se vise, pas une case. */
+  if (choix) {
+    lignes.forEach((l, i) => {
+      if (l.choix === null || l.choix === undefined) return;
+      const y = HAUT + i * LIGNE;
+      svg += `<rect class="grille-zone" x="${GAUCHE - 116}" y="${arr(y - 4)}"
+        width="${arr(L - GAUCHE + 116 - 8)}" height="${CELL + 8}" data-choix="${ech(l.choix)}" />`;
+    });
+  }
 
   for (const c of cles) {
     const y = hauteur - 6 - (rangs - c.rang) * RANG_LEG;
@@ -777,8 +802,16 @@ export function populations({ groupes, seuil, fmtX = String, motRecouvrement, ar
 
   const marques = [x0, ...(seuil && fini(seuil.v) ? [seuil.v] : []), x1];
   for (const v of marques) {
+    if (seuil && fini(seuil.v) && v !== seuil.v && Math.abs(px(v) - px(seuil.v)) < 40) continue;
     const ancrage = v === x0 ? "start" : v === x1 ? "end" : "middle";
     svg += `<text class="grad" x="${px(v)}" y="${sol + 16}" text-anchor="${ancrage}">${ech(fmtX(v))}</text>`;
+  }
+
+  /* La prise, en dernier pour être au-dessus : la barre s'attrape n'importe où entre les
+   * deux populations qu'elle sépare, pas sur son trait. */
+  if (seuil?.saisissable && fini(seuil.v)) {
+    svg += `<rect class="carte-prise" x="${M.gauche}" y="${M.haut}" width="${arr(L - M.gauche - M.droite)}"
+      height="${arr(sol + 6 - M.haut)}" data-x0="${x0}" data-x1="${x1}" data-y0="0" data-y1="1" />`;
   }
 
   return cadre(svg, hauteur, aria) + "</figure>";
@@ -1132,6 +1165,9 @@ export function choisir(racine, onChoix, courant) {
     el.setAttribute("role", "radio");
     el.setAttribute("aria-checked", String(String(courant) === val(el)));
     el.addEventListener("focus", () => { racine.dataset.choixFoyer = val(el); });
+    /* Même précaution que pour la prise : un noeud retiré du document émet `blur`, et
+     * effacer le drapeau là-dessus perdrait le foyer à chaque flèche. */
+    el.addEventListener("blur", () => { if (el.isConnected) delete racine.dataset.choixFoyer; });
     el.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       racine.dataset.choixTire = "1";
