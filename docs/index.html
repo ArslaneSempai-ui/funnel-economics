@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Où fuit l'entonnoir, et ce que ça vaut</title>
+<title>Where the funnel leaks, and what it is worth</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fbfaf7'/%3E%3Crect x='2' y='4' width='12' height='1' fill='%23111'/%3E%3Crect x='2' y='7' width='12' height='1' fill='%23111'/%3E%3Crect x='2' y='11' width='12' height='2' fill='%23111'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="registre.css" />
 </head>
@@ -11,7 +11,6 @@
 <main>
   <div class="haut">
     <div><h1 id="h1"></h1><p class="lede" id="lede"></p></div>
-    <div class="lang"><button id="fr" type="button">FR</button><button id="en" type="button">EN</button></div>
   </div>
 <p class="renvoi" style="margin-bottom:1.5rem">
 This runs entirely in your browser — no server, nothing leaves your machine. The funnel is
@@ -109,7 +108,7 @@ window.LOCAL = async (chemin, corps) => {
 };
 </script>
 <script type="module">
-import { barres, rangs, brancher } from "./graphes.js";
+import { barres, rangs, choisir, brancher } from "./graphes.js";
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -133,80 +132,6 @@ const api = async (chemin, corps) =>
  * defect rather than a missing translation.
  */
 const T = {
-  fr: {
-    h1: "Où fuit l'entonnoir, et ce que ça vaut",
-    lede: "Un graphique d'entonnoir ne peut pas dire quoi réparer : il ne contient ni les coûts ni les volumes en aval. Cet écran ajoute les deux.",
-
-    releve: "L'entonnoir mesuré",
-    colEtape: "étape", colEntres: "entrés", colConvertis: "convertis", colTaux: "taux",
-    colIntervalle: "intervalle 95 %", colPrecision: "± points",
-    boutEnBout: "de bout en bout",
-
-    pireTitre: "L'étape la plus faible",
-    pireIdentifiable: (e, t) => `<b>${e}</b> à ${t}. Aucun intervalle d'une autre étape ne l'atteint : le classement tient.`,
-    pireAmbigu: (e, t, autres) => `<b>${e}</b> à ${t} — mais ${autres} chevauche${autres.includes(",") ? "nt" : ""} son intervalle. <b>Cet échantillon ne peut pas dire laquelle est la pire</b>, et l'outil refuse de trancher.`,
-
-    titreValeur: "Ce que vaut chaque réparation",
-    valeurQuoi: "Chiffré en <b>rejouant l'entonnoir</b> avec l'amélioration appliquée, pas en multipliant des taux sur une page.",
-    figEntonnoirTitre: "Ce qui reste, étape après étape",
-    figEntonnoirAria: "Barres décroissantes du nombre de personnes encore présentes : l'essentiel de la chute est consommé dès la première étape.",
-    figTauxTitre: "Le taux de chaque étape, et sa marge d'erreur",
-    figTauxAria: "Barres des taux de conversion par étape, chacune portant son intervalle de confiance ; deux intervalles qui se recouvrent ne se classent pas.",
-    tropPeu: "trop peu d'observations",
-    versEtape: (de, a) => `${de} → ${a}`,
-    colPoints: "points", colClients: "clients/an en plus", colRevenu: "revenu en plus",
-    colCout: "coût", colParEuro: "par $", colRangGraphe: "rang au graphique",
-
-    voirChiffres: "Voir tous les chiffres",
-    titreLeviers: "Le classement n'est pas dans l'entonnoir",
-    leviersQuoi: "Chaque levier a un coût et un plafond — les deux nombres que personne n'écrit.",
-    colLevier: "levier", colCoutLevier: "coût de la réparation", colPlafond: "points gagnables",
-    ordreAvant: "ordre actuel",
-    remise: "Revenir aux leviers de départ",
-
-    suiteEntonnoir: "Un graphique s'arrête ici : il montre des taux, jamais ce qu'un correctif coûte ni ce qu'il rapporte.",
-    suiteValeur: (best, worst, x) => `<b>Le meilleur et le pire endroit où dépenser diffèrent d'un facteur ${x}</b> — ${best}× contre ${worst}×. Rien de tout ça n'est sur le graphique : ni les coûts, ni les volumes en aval. <em>Et ce classement n'appartient même pas à l'entonnoir. Essaie ci-dessous.</em>`,
-    ordreDepart: "ordre de départ", ordreMaintenant: "ordre maintenant",
-    suiteChange: "<b>L'ordre vient de changer.</b> Aucun chiffre de l'entonnoir n'a bougé — pas un taux, pas un intervalle, pas une barre. Seule une conviction sur ce qu'une réparation coûte a changé. <em>Le classement n'était jamais dans l'entonnoir : il est dans les leviers, et les leviers sont la partie que personne n'écrit.</em>",
-    suitePasChange: "L'ordre n'a pas bougé pour l'instant. Essaie « la page est épuisée » : c'est la situation la plus courante et elle suffit à tout renverser.",
-    reglageFin: "Régler les leviers à la main",
-    sc: {
-      depart: "Les leviers de départ",
-      pageEpuisee: "La page a déjà été refaite deux fois",
-      onboardingFacile: "L'onboarding est un chantier connu",
-      retentionUrgente: "La rétention est la priorité du board",
-    },
-    scCourt: {
-      depart: "au départ", pageEpuisee: "page épuisée",
-      onboardingFacile: "onboarding facile", retentionUrgente: "rétention urgente",
-    },
-    figRangsTitre: "Le rang de chaque levier, scénario par scénario",
-    figRangsAria: "Quatre trajectoires de rang, une par levier, suivies à travers quatre scénarios. "
-      + "Le classement change d'un scénario à l'autre.",
-    rangCourt: (r) => r === 1 ? "1er" : r + "e",
-    rangsSuite: (levier, de, a) => `Un seul levier change de prix, et l'ordre des priorités s'inverse : `
-      + `<b>${levier} passe du ${de} au ${a} rang</b>. Le classement ne vit pas dans l'entonnoir, `
-      + `il vit dans le coût des leviers — que personne n'écrit.`,
-    rangsStable: "Le classement tient dans les quatre scénarios : l'ordre des priorités ne dépend "
-      + "pas de ces croyances-là.",
-    rangsReserve: "Un rang n'a pas d'échelle. Deux leviers séparés d'un cheveu s'y lisent comme "
-      + "premier et deuxième — la valeur est au survol de chaque point.",
-    scq: {
-      depart: "revenir au point de comparaison",
-      pageEpuisee: "signup : 90 000 $ pour 1 point au lieu de 40 000 $ pour 4",
-      onboardingFacile: "activate : 40 000 $ au lieu de 120 000 $",
-      retentionUrgente: "retain : budget doublé, plafond doublé",
-    },
-    titreHyp: "Les hypothèses",
-    hypQuoi: "Tout est discutable, et tout se modifie.",
-    annualRevenuePerCustomer: "Revenu annuel par client ($)",
-    costPerPaidVisit: "Coût d'une visite payante ($)",
-    monthsToShip: "Mois pour livrer une réparation",
-    defaut: "Revenir aux hypothèses de départ",
-
-    provenance: "Chaque chiffre de cette page est <b>mesuré</b> en faisant tourner le modèle, <b>supposé</b> parce que personne ici ne peut le connaître, ou <b>choisi</b> par moi. Aucun n'est retrouvé dans une source publique : les références de conversion sont publiées par ceux qui vendent la chose mesurée. Le README dit lequel est lequel, un par un.",
-  },
-  en: {
     h1: "Where the funnel leaks, and what that is worth",
     lede: "A funnel chart cannot tell you what to fix: it carries neither the costs nor the downstream volumes. This screen adds both.",
 
@@ -253,6 +178,8 @@ const T = {
       depart: "as it stands", pageEpuisee: "landing page spent",
       onboardingFacile: "onboarding easy", retentionUrgente: "retention urgent",
     },
+    scEnCours: "chosen",
+    scPhrase: (phrase) => `Reading the column for: <b>${phrase}</b>. Take another column to price the levers differently.`,
     figRangsTitre: "Where each lever ranks, scenario by scenario",
     figRangsAria: "Four rank trajectories, one per lever, followed across four scenarios. "
       + "The ranking changes from one scenario to the next.",
@@ -278,11 +205,9 @@ const T = {
     defaut: "Reset the assumptions",
 
     provenance: "Every figure on this page is <b>measured</b> by running the model, <b>assumed</b> because nobody here can know it, or <b>chosen</b> by me. None is retrieved from a public source: conversion benchmarks are published by the companies selling the thing being benchmarked. The README says which is which, one by one.",
-  },
 };
 
-let langue = localStorage.getItem("langue") ?? "en";
-const t = () => T[langue];
+const t = () => T;
 let etat = null, occupe = false;
 
 const nb = (n) => Math.round(n).toLocaleString("en-GB");
@@ -420,16 +345,14 @@ function blocLeviers() {
   $("#titreLeviers").textContent = L.titreLeviers;
 
   /*
-   * Named situations rather than empty number fields.
+   * Les situations nommées plutôt que des champs vides — et posées sur la figure.
    *
-   * The finding is that the ranking moves when a belief about a lever moves, and an
-   * interface that requires typing two numbers into two boxes before anything happens does
-   * not demonstrate it — it asks the reader to take it on trust and then do some data
-   * entry. Each button is a sentence somebody would actually say in a planning meeting.
+   * La trouvaille est que le classement bouge quand une croyance sur un levier bouge. Une
+   * interface qui demande de taper deux nombres avant que rien n'arrive ne le démontre
+   * pas : elle demande de croire, puis de saisir. Chaque scénario est une phrase qu'on dit
+   * vraiment en réunion — et c'est *une colonne de la figure*, puisque la figure les montre
+   * déjà toutes les quatre. Les boutons dessous répétaient les colonnes ; ils sont partis.
    */
-  const boutons = etat.scenarios.map((sc) => `<button type="button" class="scenario${sc.actif ? " on" : ""}" data-sc="${esc(sc.id)}">
-    ${esc(L.sc[sc.id] ?? sc.id)}<small>${esc(L.scq[sc.id] ?? "")}</small></button>`).join("");
-
   const champs = etat.priced.map((p) => {
     const l = etat.levers[p.step];
     return `<div>
@@ -464,8 +387,10 @@ function blocLeviers() {
    * données dans les quatre cas : elle doit se dessiner à l'identique.
    */
   const etapes = etat.ordreDepart;
+  const actif = etat.scenarios.find((sc) => sc.actif)?.id;
   const figRangs = rangs({
-    colonnes: etat.classements.map((c) => ({ titre: L.scCourt[c.id] ?? c.id })),
+    colonnes: etat.classements.map((c) => ({ titre: L.scCourt[c.id] ?? c.id, id: c.id, ici: c.id === actif })),
+    choix: true, iciTexte: L.scEnCours,
     series: etapes.map((etape) => ({
       nom: etape,
       rangs: etat.classements.map((c) => {
@@ -495,8 +420,7 @@ function blocLeviers() {
 
     <div class="titre-fig">${esc(L.figRangsTitre)}</div>${figRangs}
     <div class="suite">${suiteRangs} <em>${esc(L.rangsReserve)}</em></div>
-
-    <div class="scenarios">${boutons}</div>
+    <div class="renvoi">${L.scPhrase(esc(L.sc[actif] ?? actif))}</div>
 
     <div class="avant-apres">
       <div><div class="quand">${esc(L.ordreDepart)}</div>
@@ -513,9 +437,7 @@ function blocLeviers() {
     </details>
   </div></div>`;
 
-  for (const b of document.querySelectorAll(".scenario")) {
-    b.onclick = () => envoyer("/api/leviers", { scenario: b.dataset.sc });
-  }
+  choisir($("#leviers"), (id) => envoyer("/api/leviers", { scenario: id }), actif);
   for (const input of document.querySelectorAll("#leviers input")) {
     input.onchange = (e) => {
       const el = e.target;
@@ -550,24 +472,23 @@ function blocHypotheses() {
 
 function dessiner() {
   const L = t();
-  document.documentElement.lang = langue;
   $("#h1").textContent = L.h1;
   $("#lede").textContent = L.lede;
   $("#provenanceLegende").innerHTML = L.provenance;
-  $("#fr").className = langue === "fr" ? "on" : "";
-  $("#en").className = langue === "en" ? "on" : "";
   blocEntonnoir(); blocVerdict(); blocValeur(); blocLeviers(); blocHypotheses();
 }
 
+/* Passer la main sur les colonnes enchaîne les scénarios : on garde le dernier appel
+ * demandé plutôt que de le jeter, sinon l'écran reste en arrière de la main. */
+let enAttente = null;
 async function envoyer(chemin, corps) {
-  if (occupe) return;
+  if (occupe) { enAttente = [chemin, corps]; return; }
   occupe = true;
   try { etat = await api(chemin, corps ?? {}); dessiner(); }
-  finally { occupe = false; }
-}
-
-for (const l of ["fr", "en"]) {
-  $(`#${l}`).onclick = () => { langue = l; localStorage.setItem("langue", l); dessiner(); };
+  finally {
+    occupe = false;
+    if (enAttente) { const suite = enAttente; enAttente = null; envoyer(...suite); }
+  }
 }
 
 etat = await api("/api/etat");

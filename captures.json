@@ -1,61 +1,10 @@
-{
-  "images": [
-    {
-      "sortie": "images/demo.gif",
-      "type": "gif",
-      "taille": [
-        900,
-        780
-      ],
-      "echelle": 1,
-      "duree": 320,
-      "fenetre": [
-        900,
-        2700
-      ],
-      "depart": 1176,
-      "hauteurUtile": 780,
-      "scenes": [
-        [
-          "#cost-signup=40000"
-        ],
-        [
-          "#cost-signup=45000"
-        ],
-        [
-          "#cost-signup=50000"
-        ],
-        [
-          "#cost-signup=55000"
-        ],
-        [
-          "#cost-signup=60000"
-        ],
-        [
-          "#cost-signup=65000"
-        ],
-        [
-          "#cost-signup=70000"
-        ],
-        [
-          "#cost-signup=75000"
-        ],
-        [
-          "#cost-signup=80000"
-        ],
-        [
-          "#cost-signup=85000"
-        ],
-        [
-          "#cost-signup=90000"
-        ],
-        [
-          "#cost-signup=95000"
-        ],
-        [
-          "#cost-signup=100000"
-        ]
-      ]
-    }
-  ]
-}
+{ "images": [
+  { "sortie": "images/demo.gif", "type": "gif", "taille": [900, 352], "echelle": 2,
+    "duree": 1100, "fenetre": [1100, 2600], "depart": 1490, "hauteurUtile": 430,
+    "scenes": [
+      ["#leviers .rang-zone[data-choix=\"depart\"]!"],
+      ["#leviers .rang-zone[data-choix=\"pageEpuisee\"]!"],
+      ["#leviers .rang-zone[data-choix=\"onboardingFacile\"]!"],
+      ["#leviers .rang-zone[data-choix=\"retentionUrgente\"]!"]
+    ] }
+] }

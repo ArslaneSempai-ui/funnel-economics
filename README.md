@@ -10,7 +10,7 @@ to get.
 
 **[Try it in your browser →](https://arslanesempai-ui.github.io/funnel-economics/)** — raise what a lever costs and watch the ranking turn over. Nothing about the users changes; the order does.
 
-![Ranked by return, with the scenario buttons that reorder it](images/demo.gif)
+![Taking each scenario column in turn: the ranking of levers inverts](images/demo.gif)
 
 ```bash
 npm run measure      # the funnel, with an interval on every rate
