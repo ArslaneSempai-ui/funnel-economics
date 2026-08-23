@@ -18,7 +18,7 @@ npm run value        # what fixing each step is worth, and what it costs
 npm run sensitivity  # which inputs decide the ranking, and which do not
 npm run adversarial  # five funnels where the obvious reading is wrong
 npm run baselines    # against deciding with no analysis at all
-npm test             # types, README figures, and <!--p:portfolio.parDepot.funnel-->33<!--/p--> tests
+npm test             # types, README figures, and <!--p:portfolio.parDepot.funnel-->34<!--/p--> tests
 ```
 
 Everything runs locally. No API key, nothing leaves the machine, and anyone who clones this
