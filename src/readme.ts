@@ -17,6 +17,7 @@ import { INVENTORY } from "./inventory.ts";
 import { markdown } from "./provenance.ts";
 import { ASSUMPTIONS } from "./assumptions.ts";
 import { run as emit, table } from "./figures.ts";
+import { fileURLToPath } from "node:url";
 
 const users = generate();
 const rates = measure(users);
@@ -125,5 +126,5 @@ const baselines = (() => {
 
 const provenance = markdown(INVENTORY, table);
 
-emit(new URL("../README.md", import.meta.url).pathname,
+emit(fileURLToPath(new URL("../README.md", import.meta.url)),
   { finding, funnelTable, funnelNote, valueTable, reorder, sensitivity, traps, baselines, provenance });
