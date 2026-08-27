@@ -3,7 +3,7 @@
  *
  * A tool that recommends something is only worth its complexity if the recommendation beats
  * what somebody would have done without it. The four strategies below are the ones actually
- * used in the room, and three of them need no data.
+ * used in the room, and three of them need no model — a funnel chart, a budget, or nothing.
  *
  * "Fix the worst step" is what a funnel chart invites. "Fix retention" is what the last
  * article anybody read said. "Fix the cheapest" is what a constrained quarter produces. If

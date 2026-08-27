@@ -116,7 +116,7 @@ if (isMain(import.meta)) {
   const pc = (x: number) => (x * 100).toFixed(1) + " %";
 
   console.log(`\n${users.length.toLocaleString("en-GB")} visits over ${SCENARIO.months} months\n`);
-  console.log("step         entered    converted    rate      95 % interval    ± points");
+  console.log("step         entered    converted    rate      95 % interval    width, pts");
   console.log("─".repeat(76));
 
   for (const r of rates) {

@@ -84,7 +84,7 @@ export const TRAPS: Trap[] = [
       const rates = measure(generate());
       return rates.map((r) =>
         `  ${r.step.padEnd(12)}${pc(r.rate).padStart(8)}   on ${r.entered.toLocaleString("en-GB").padStart(8)} people` +
-        `   ±${r.precision.toFixed(1)} points`);
+        `   ${r.precision.toFixed(1)} pts wide`);
     },
   },
   {

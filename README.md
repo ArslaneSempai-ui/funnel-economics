@@ -1,8 +1,8 @@
 # The funnel chart cannot tell you what to fix
 
 A five-step acquisition funnel, measured on the individuals rather than the totals, and then
-priced: what is one point of improvement at each step actually worth, against what it costs
-to get.
+priced: what the improvement each step can realistically deliver is actually worth, against
+what it costs to get.
 
 <!-- figures:finding -->
 **The finding.** The best and worst places to spend on this funnel differ by **15×** — `signup` returns 31.1× the money put into it, `retain` returns 2.1×. A funnel chart cannot tell you that, and not because you are reading it wrong: it carries **no costs and no downstream volumes**, which are the only two facts that decide. Change one belief about what a fix costs — nothing about the users, not a single bar on the chart — and the order changes.
@@ -10,7 +10,7 @@ to get.
 
 **[Try it in your browser →](https://arslanesempai-ui.github.io/funnel-economics/)** — raise what a lever costs and watch the ranking turn over. Nothing about the users changes; the order does.
 
-![Taking each scenario column in turn: the ranking of levers inverts](images/demo.gif)
+![Taking each scenario column in turn: one of them drops signup from first place to third](images/demo.gif)
 
 ```bash
 npm run measure      # the funnel, with an interval on every rate
@@ -29,7 +29,7 @@ reproduces every number below.
 ## The funnel
 
 <!-- figures:funnelTable -->
-| Step | Entered | Converted | Rate | 95 % interval | ± points |
+| Step | Entered | Converted | Rate | 95 % interval | Width, pts |
 |---|---|---|---|---|---|
 | `signup` | 120,000 | 21,415 | 17.8 % | [17.6 % – 18.1 %] | 0.4 |
 | `activate` | 21,415 | 12,102 | 56.5 % | [55.8 % – 57.2 %] | 1.3 |
@@ -134,10 +134,10 @@ does not protect against, which is why they are named rather than scored.
 **Actually.** Retention is measured on people who already signed up, activated and paid. They are the most committed users the funnel produces, three filters deep. A 76 % rate among them says nothing about whether the product retains anybody else, because nobody else is in the denominator.
 
 ```
-  signup        17.8 %   on  120,000 people   ±0.4 points
-  activate      56.5 %   on   21,415 people   ±1.3 points
-  subscribe     21.9 %   on   12,102 people   ±1.5 points
-  retain        75.9 %   on    2,648 people   ±3.3 points
+  signup        17.8 %   on  120,000 people   0.4 pts wide
+  activate      56.5 %   on   21,415 people   1.3 pts wide
+  subscribe     21.9 %   on   12,102 people   1.5 pts wide
+  retain        75.9 %   on    2,648 people   3.3 pts wide
 ```
 
 **How to catch it.** Read every step's rate together with the size of its denominator. A rate on 2,600 people who survived three filters is a different kind of object from a rate on 120,000 arrivals, and putting them in the same column invites the comparison.
@@ -190,7 +190,8 @@ does not protect against, which is why they are named rather than scored.
 ## Against doing no analysis at all
 
 A tool that recommends something is only worth its complexity if it beats what somebody
-would have done without it. Three of the four strategies below need no data.
+would have done without it. Three of the four strategies below need no model — a funnel
+chart, a budget, or nothing at all.
 
 <!-- figures:baselines -->
 | Way of deciding | What it needs | Picks | Return |
@@ -286,7 +287,7 @@ represent the dependence yet, so the door leads nowhere.
 | Every ranking | Refused when the intervals overlap, rather than invented |
 | The reordering claim | A test fails if the alternative levers stop changing the order |
 | Every trap | A test fails if its evidence stops supporting its claim |
-| The tool itself | Compared against three ways of deciding that need no data |
+| The tool itself | Compared against three ways of deciding that need no model |
 | The draw | Seeded — a stranger running `npm test` gets these exact numbers |
 
 ---

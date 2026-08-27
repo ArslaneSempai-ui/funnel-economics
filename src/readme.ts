@@ -39,7 +39,7 @@ const finding =
   `users, not a single bar on the chart — and the order changes.`;
 
 const funnelTable = table(
-  ["Step", "Entered", "Converted", "Rate", "95 % interval", "± points"],
+  ["Step", "Entered", "Converted", "Rate", "95 % interval", "Width, pts"],
   rates.map((r) => [
     "`" + r.step + "`", n(r.entered), n(r.converted), pc(r.rate),
     `[${pc(r.low)} – ${pc(r.high)}]`, r.precision.toFixed(1),
