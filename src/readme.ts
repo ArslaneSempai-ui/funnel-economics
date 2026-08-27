@@ -9,8 +9,8 @@
 
 import { generate, SCENARIO } from "./population.ts";
 import { measure, worstStep, endToEnd } from "./funnel.ts";
-import { priceAll, compare, verdict, LEVERS } from "./value.ts";
-import { bands } from "./sensitivity.ts";
+import { priceAll, compare, verdict, LEVERS, PAGE_EPUISEE } from "./value.ts";
+import { bands, verdictOf } from "./sensitivity.ts";
 import { TRAPS } from "./adversarial.ts";
 import { compareAll } from "./baselines.ts";
 import { INVENTORY } from "./inventory.ts";
@@ -51,11 +51,14 @@ const w = worstStep(rates);
 const funnelNote =
   `${n(e.retained)} of ${n(e.entered)} visits end up retained — **${pc(e.rate)}** ` +
   `[${(e.low * 100).toFixed(2)}–${(e.high * 100).toFixed(2)}].\n\n` +
-  `Worst step by rate: \`${w.worst.step}\` at ${pc(w.worst.rate)}. ` +
-  (w.identifiable
-    ? "No other step's interval reaches it, so the ranking holds — which is not the usual case."
-    : `But \`${w.tied.map((t) => t.step).join("`, `")}\` overlap${w.tied.length === 1 ? "s" : ""} it. ` +
-      `This sample cannot say which is worse, and the tool refuses to.`);
+  (w.worst === null
+    ? "Worst step by rate: no step has enough observations behind it, so this sample cannot " +
+      "name one and the tool refuses to."
+    : `Worst step by rate: \`${w.worst.step}\` at ${pc(w.worst.rate)}. ` +
+      (w.identifiable
+        ? "No other step's interval reaches it, so the ranking holds — which is not the usual case."
+        : `But \`${w.tied.map((t) => t.step).join("`, `")}\` overlap${w.tied.length === 1 ? "s" : ""} it. ` +
+          `This sample cannot say which is worse, and the tool refuses to.`));
 
 const valueTable = table(
   ["Step", "Points", "Extra customers/yr", "Extra revenue", "Cost", "Per $", "Chart rank"],
@@ -66,11 +69,13 @@ const valueTable = table(
 );
 
 const reorder = (() => {
-  const c = compare({ signup: { cost: 90_000, ceiling: 0.01, what: "a page already rebuilt twice" } });
+  const c = compare({ signup: { ...PAGE_EPUISEE } });
   if (!c.reordered) return "On these levers the ranking does not move.";
+  const pts = (x: number) => (x * 100).toFixed(0) + (x * 100 === 1 ? " point" : " points");
   return `Suppose the landing page has already been rebuilt twice, so signup is ` +
-    `**$90,000 for one point** rather than $40,000 for four. Nothing about the users changes. ` +
-    `Not one bar on the chart moves.\n\n` +
+    `**${money(PAGE_EPUISEE.cost)} for ${pts(PAGE_EPUISEE.ceiling)}** rather than ` +
+    `${money(LEVERS.signup.cost)} for ${pts(LEVERS.signup.ceiling)}. ` +
+    `Nothing about the users changes. Not one bar on the chart moves.\n\n` +
     `| | Order by return |\n|---|---|\n` +
     `| before | ${c.base.map((p) => "`" + p.step + "`").join(" → ")} |\n` +
     `| after | ${c.other.map((p) => "`" + p.step + "`").join(" → ")} |\n\n` +
@@ -86,13 +91,27 @@ const sensitivity = (() => {
       "`" + x.name + "`",
       x.current >= 100 ? money(x.current) : x.current.toFixed(2),
       (x.current >= 100 ? money(x.from) + " – " + money(x.to) : x.from.toFixed(2) + " – " + x.to.toFixed(2)),
-      x.decides ? "**decides**" : "no effect on the order",
+      x.decides ? "**decides**" : verdictOf(x),
     ]),
   );
+  const inertes = b.filter((x) => x.inerte).map((x) => "`" + x.name + "`");
+  /*
+   * The third verdict has to be spelled out, or the table reads as two.
+   *
+   * An input nothing reads produces the same words as an input swept and found robust, and
+   * the second is a result while the first is a wire. The count is derived, so the sentence
+   * cannot survive the day one of them is connected — which is the day it would start lying.
+   */
+  const wired = inertes.length === 0 ? "" :
+    `\n\n${inertes.join(" and ")} ${inertes.length === 1 ? "is" : "are"} editable on the screen ` +
+    `and read by no line of the pricing, so ${inertes.length === 1 ? "its" : "their"} stability ` +
+    `is a fact about the wiring rather than about the funnel. The table says so instead of ` +
+    `filing ${inertes.length === 1 ? "it" : "them"} under the same verdict as a real result — ` +
+    `which is the trap this repository spends a whole page naming.`;
   return `${t}\n\nThe revenue per customer scales every step equally, so it moves every figure ` +
     `on the page and changes nothing about which to fix first. That is the assumption a reader ` +
     `is most likely to argue about, and the one that matters least. The lever costs are the ` +
-    `opposite: the least known numbers here, and the only ones that reorder the answer.`;
+    `opposite: the least known numbers here, and the only ones that reorder the answer.${wired}`;
 })();
 
 const traps = TRAPS.map((t) =>

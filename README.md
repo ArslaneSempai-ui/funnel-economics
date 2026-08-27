@@ -68,7 +68,7 @@ behind a spreadsheet.
 ### The same funnel, one belief changed
 
 <!-- figures:reorder -->
-Suppose the landing page has already been rebuilt twice, so signup is **$90,000 for one point** rather than $40,000 for four. Nothing about the users changes. Not one bar on the chart moves.
+Suppose the landing page has already been rebuilt twice, so signup is **$90,000 for 1 point** rather than $40,000 for 4 points. Nothing about the users changes. Not one bar on the chart moves.
 
 | | Order by return |
 |---|---|
@@ -91,14 +91,16 @@ is whether the first thing to fix is still the first thing to fix.
 | Input | In use | Ranking unchanged over | Verdict |
 |---|---|---|---|
 | `annualRevenuePerCustomer` | $1,200 | $50 – $50,000 | no effect on the order |
-| `costPerPaidVisit` | 2.40 | 0.05 – 50.00 | no effect on the order |
-| `monthsToShip` | 3.00 | 0.50 – 18.00 | no effect on the order |
+| `costPerPaidVisit` | 2.40 | 0.05 – 50.00 | not read by the model |
+| `monthsToShip` | 3.00 | 0.50 – 18.00 | not read by the model |
 | `cost of fixing signup` | $40,000 | $8,000 – $168,000 | **decides** |
 | `cost of fixing activate` | $120,000 | $104,000 – $344,000 | **decides** |
 | `cost of fixing subscribe` | $180,000 | $45,600 – $204,000 | **decides** |
 | `cost of fixing retain` | $260,000 | $93,600 – $1,300,000 | **decides** |
 
 The revenue per customer scales every step equally, so it moves every figure on the page and changes nothing about which to fix first. That is the assumption a reader is most likely to argue about, and the one that matters least. The lever costs are the opposite: the least known numbers here, and the only ones that reorder the answer.
+
+`costPerPaidVisit` and `monthsToShip` are editable on the screen and read by no line of the pricing, so their stability is a fact about the wiring rather than about the funnel. The table says so instead of filing them under the same verdict as a real result — which is the trap this repository spends a whole page naming.
 <!-- /figures:sensitivity -->
 
 ---

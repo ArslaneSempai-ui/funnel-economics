@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { generate, reached, TRUE_RATES, SCENARIO } from "./population.ts";
 import { measure, measureBy, measureMonth, worstStep, endToEnd } from "./funnel.ts";
-import { price, priceAll, compare, LEVERS } from "./value.ts";
-import { bands } from "./sensitivity.ts";
+import { price, priceAll, compare, LEVERS, PAGE_EPUISEE } from "./value.ts";
+import { bands, verdictOf } from "./sensitivity.ts";
 import { TRAPS } from "./adversarial.ts";
 import { compareAll } from "./baselines.ts";
 import { INVENTORY, MUST_DECLARE } from "./inventory.ts";
@@ -47,9 +47,30 @@ test("a step is never ranked against one it cannot be distinguished from", () =>
     "on 300 visits the steps must not be separable — if they are, the interval is wrong");
 
   const large = worstStep(measure(generate()));
+  assert.ok(large.worst !== null, "the published funnel must be able to name a worst step");
   for (const t of large.tied) {
-    assert.ok(t.low <= large.worst.high, "a step declared tied must actually overlap");
+    assert.ok(t.low <= large.worst!.high, "a step declared tied must actually overlap");
   }
+});
+
+test("with nothing reportable the tool refuses instead of answering", () => {
+  /*
+   * THE CASE THAT USED TO PRODUCE THE STRONGEST VERDICT FROM NO DATA.
+   *
+   * `reduce(fn, usable[0]!)` on an empty array returns `undefined` without iterating, and
+   * the tie filter that follows never runs its callback — so nothing threw and the shape
+   * came back as `{ worst: undefined, tied: [], identifiable: true }`. "Identifiable",
+   * declared on zero observations, with the type promising a `StepRate` that was not there.
+   *
+   * Ten visits: no step clears the reporting floor.
+   */
+  const nothing = measure(generate({ ...SCENARIO, visitsPerMonth: 10, months: 1 }));
+  assert.ok(nothing.every((r) => !r.reportable), "the fixture must have nothing reportable");
+
+  const w = worstStep(nothing);
+  assert.equal(w.worst, null, "no reportable step must yield no worst step");
+  assert.equal(w.identifiable, false,
+    "a verdict of 'identifiable' on zero observations is the emptiest green there is");
 });
 
 test("no rate is reported without enough observations behind it", () => {
@@ -74,7 +95,7 @@ test("the ranking is a property of the levers, not of the funnel", () => {
    * If this ever stops reordering, the demonstration on the page is no longer true and the
    * page has to say something else.
    */
-  const c = compare({ signup: { cost: 90_000, ceiling: 0.01, what: "already rebuilt twice" } });
+  const c = compare({ signup: { ...PAGE_EPUISEE } });
   assert.equal(c.reordered, true, "the alternative levers must reorder the ranking");
   assert.notEqual(c.base[0]!.step, c.other[0]!.step, "and must change what comes first");
 });
@@ -92,6 +113,44 @@ test("the money assumptions do not decide the ranking; the lever costs do", () =
   }
   const levers = b.filter((x) => x.name.startsWith("cost of fixing"));
   assert.ok(levers.some((x) => x.decides), "if no lever cost decides, the sweep is measuring nothing");
+});
+
+test("an input nothing reads is not published as a robustness result", () => {
+  /*
+   * WHAT THE TEST ABOVE WAS GREEN FOR.
+   *
+   * It asserts `decides === false` for all three assumptions, and two of them —
+   * `costPerPaidVisit` and `monthsToShip` — are read by no line of the pricing. Their
+   * `false` was a certainty of the wiring, and it satisfied a check written to record a
+   * measurement. The table published all three under one verdict, so a reader could not
+   * tell a swept result from a disconnected wire.
+   *
+   * No name is listed here on purpose: a list would have to be edited on the day one of
+   * them is wired up, which is the day the published claim would start lying. Both classes
+   * are required to be non-empty, so neither the flag nor the distinction can quietly
+   * become decoration.
+   */
+  const b = bands();
+  const inertes = b.filter((x) => x.inerte);
+  const vivants = b.filter((x) => !x.inerte);
+
+  assert.ok(inertes.length > 0,
+    "no input came out inert — either the model grew or the measurement stopped measuring; "
+    + "check it before believing this is good news");
+  assert.ok(vivants.some((x) => !x.decides),
+    "no input is both read and non-deciding — the distinction this flag draws has nothing "
+    + "left to draw, and 'no effect on the order' now means only one thing");
+
+  for (const x of inertes) {
+    assert.equal(x.decides, false,
+      `${x.name}: reported as unread and as deciding at once — the two measurements disagree`);
+    assert.equal(verdictOf(x), "not read by the model",
+      `${x.name}: inert and still published under a verdict that sounds like a finding`);
+  }
+  for (const x of vivants) {
+    assert.notEqual(verdictOf(x), "not read by the model",
+      `${x.name}: moves the figures and is published as unread`);
+  }
 });
 
 test("every trap's evidence supports the claim it is making", () => {
