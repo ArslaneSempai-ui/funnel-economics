@@ -121,12 +121,22 @@ export function compare(alternative, s = SCENARIO, a = ASSUMPTIONS) {
  * is a real position rather than a value picked to make the order flip. The page reports
  * what happens, including when nothing does.
  */
+/**
+ * The alternative belief the demonstration is built on, in one place.
+ *
+ * It used to exist four times over — here, in the CLI below, in `readme.ts`, and in the
+ * test — and the prose beside each copy typed the two dollar figures out by hand. Four
+ * copies of a claim are four chances to disagree, and the two that reach a reader are the
+ * README and the terminal, which is where a stale one would be believed. The sentences are
+ * derived from this object and from `LEVERS` now, so raising a lever cost cannot leave a
+ * paragraph behind saying otherwise.
+ */
+export const PAGE_EPUISEE = {
+    cost: 90_000, ceiling: 0.01, what: "a landing page already rebuilt twice",
+};
 export const SCENARIOS = [
     { id: "depart", levers: {} },
-    {
-        id: "pageEpuisee",
-        levers: { signup: { cost: 90_000, ceiling: 0.01, what: "a landing page already rebuilt twice" } },
-    },
+    { id: "pageEpuisee", levers: { signup: { ...PAGE_EPUISEE } } },
     {
         id: "onboardingFacile",
         levers: { activate: { cost: 40_000, ceiling: 0.10, what: "an onboarding flow the team has done before" } },
@@ -173,10 +183,12 @@ if (isMain(import.meta)) {
      * out of it cheaply. Nothing about the users changes here — every bar on the chart is
      * identical — and the ranking moves.
      */
-    const c = compare({ signup: { cost: 90_000, ceiling: 0.01, what: "a landing page already rebuilt twice" } });
+    const c = compare({ signup: { ...PAGE_EPUISEE } });
     if (c.reordered) {
+        const pts = (x) => (x * 100).toFixed(0) + (x * 100 === 1 ? " point" : " points");
         console.log("The same funnel, one lever believed differently\n");
-        console.log("  signup is now $90,000 for one point rather than $40,000 for four —");
+        console.log(`  signup is now ${money(PAGE_EPUISEE.cost)} for ${pts(PAGE_EPUISEE.ceiling)} rather than ` +
+            `${money(LEVERS.signup.cost)} for ${pts(LEVERS.signup.ceiling)} —`);
         console.log("  a page that has already been rebuilt twice. Nothing else changes.\n");
         console.log("  order by return, before:  " + c.base.map((p) => p.step).join(" → "));
         console.log("  order by return, after:   " + c.other.map((p) => p.step).join(" → "));

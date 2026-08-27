@@ -81,9 +81,20 @@ window.LOCAL = async (chemin, corps) => {
     }
     else {
       const { step, champ, valeur } = corps;
-      if (levers[step] && (champ === "cost" || champ === "ceiling") && Number.isFinite(valeur)) {
+      if (levers[step] && (champ === "cost" || champ === "ceiling")
+          && typeof valeur === "number" && Number.isFinite(valeur)) {
         const [min, max] = LEVER_BOUNDS[champ];
         levers = { ...levers, [step]: { ...levers[step], [champ]: Math.min(max, Math.max(min, valeur)) } };
+        /*
+         * Quatrième champ que ce shim ne tenait pas à jour.
+         *
+         * Le serveur remet \`scenario\` à vide dès qu'un levier est réglé à la main : les
+         * leviers ne correspondent plus au scénario nommé, et la pastille ne doit plus
+         * s'allumer. La démo publiée l'oubliait, donc « pageEpuisee » restait sélectionnée
+         * pendant qu'on montait son coût à 500 000 — un état que le serveur local ne peut
+         * pas produire, donc que personne ne voyait en développement.
+         */
+        scenario = "";
       }
     }
     return etat();

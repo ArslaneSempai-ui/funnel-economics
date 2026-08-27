@@ -98,9 +98,20 @@ window.LOCAL = async (chemin, corps) => {
     }
     else {
       const { step, champ, valeur } = corps;
-      if (levers[step] && (champ === "cost" || champ === "ceiling") && Number.isFinite(valeur)) {
+      if (levers[step] && (champ === "cost" || champ === "ceiling")
+          && typeof valeur === "number" && Number.isFinite(valeur)) {
         const [min, max] = LEVER_BOUNDS[champ];
         levers = { ...levers, [step]: { ...levers[step], [champ]: Math.min(max, Math.max(min, valeur)) } };
+        /*
+         * Quatrième champ que ce shim ne tenait pas à jour.
+         *
+         * Le serveur remet `scenario` à vide dès qu'un levier est réglé à la main : les
+         * leviers ne correspondent plus au scénario nommé, et la pastille ne doit plus
+         * s'allumer. La démo publiée l'oubliait, donc « pageEpuisee » restait sélectionnée
+         * pendant qu'on montait son coût à 500 000 — un état que le serveur local ne peut
+         * pas produire, donc que personne ne voyait en développement.
+         */
+        scenario = "";
       }
     }
     return etat();
@@ -242,8 +253,19 @@ const pc = (x) => (x * 100).toFixed(1) + " %";
  * as "2,4" on an English page — a visible inconsistency on a screen whose whole argument
  * is that the figures are trustworthy. These are text fields now, and both separators are
  * accepted because both are what people type.
+ *
+ * AN EMPTY FIELD IS NOT A ZERO, and the tolerant read is exactly where that gets lost.
+ * `Number("")` is `0`, not `NaN`: the conversion happens BEFORE any guard, so a blank box
+ * arrived at the server as a finite number and was clamped into the allowed range. Measured
+ * on this screen: clearing the signup cost moved it from $40,000 to $1,000, and clearing the
+ * revenue per customer moved it from $1,200 to $50 — silently, and the ranking below is a
+ * function of both. Neither door downstream can tell that 0 apart from a typed 0, so the
+ * refusal has to happen here, where the emptiness is still visible.
  */
-const lire = (v) => Number(String(v).replace(/\s/g, "").replace(",", "."));
+const lire = (v) => {
+  const s = String(v ?? "").replace(/\s/g, "").replace(",", ".");
+  return s === "" ? NaN : Number(s);
+};
 
 function blocEntonnoir() {
   const L = t();
