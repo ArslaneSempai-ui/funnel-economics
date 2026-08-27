@@ -77,12 +77,27 @@ export function measureMonth(users: User[], month: number): StepRate[] {
  * that gets missed.
  */
 export function worstStep(rates: StepRate[]): {
-  worst: StepRate;
+  worst: StepRate | null;
   /** Steps whose interval overlaps the worst — indistinguishable from it. */
   tied: StepRate[];
   identifiable: boolean;
 } {
   const usable = rates.filter((r) => r.reportable);
+  /*
+   * NO REPORTABLE STEP IS A REFUSAL, NOT AN ANSWER.
+   *
+   * The previous shape declared `worst: StepRate` and got it from `reduce(..., usable[0]!)`.
+   * On an empty `usable` that reduce returns `undefined` without iterating, and the filter
+   * below never runs its callback — so nothing threw. The function returned
+   * `{ worst: undefined, tied: [], identifiable: true }`: the strongest verdict it can give,
+   * *"the worst step is identifiable"*, produced from zero observations, with the type
+   * claiming a `StepRate` that was not there. Reachable through `measureBy` and
+   * `measureMonth`, which slice the population down as far as the caller likes.
+   *
+   * A tool whose stated discipline is refusing to rank what it cannot separate must refuse
+   * hardest when it has separated nothing at all.
+   */
+  if (usable.length === 0) return { worst: null, tied: [], identifiable: false };
   const worst = usable.reduce((lo, r) => (r.rate < lo.rate ? r : lo), usable[0]!);
   const tied = usable.filter((r) => r.step !== worst.step && r.low <= worst.high);
   return { worst, tied, identifiable: tied.length === 0 };
@@ -121,11 +136,14 @@ if (isMain(import.meta)) {
 
   const w = worstStep(rates);
   console.log(
-    `\nWorst step by rate: ${w.worst.step} at ${pc(w.worst.rate)}.` +
-    (w.identifiable
-      ? " No other step's interval reaches it — the ranking holds."
-      : ` But ${w.tied.map((t) => t.step).join(", ")} overlap${w.tied.length === 1 ? "s" : ""} it. ` +
-        `This sample cannot say which is worse.`),
+    w.worst === null
+      ? `\nWorst step by rate: no step has ${ENOUGH} observations behind it — this sample ` +
+        `cannot name one, and will not.`
+      : `\nWorst step by rate: ${w.worst.step} at ${pc(w.worst.rate)}.` +
+        (w.identifiable
+          ? " No other step's interval reaches it — the ranking holds."
+          : ` But ${w.tied.map((t) => t.step).join(", ")} overlap${w.tied.length === 1 ? "s" : ""} it. ` +
+            `This sample cannot say which is worse.`),
   );
 
   console.log("\nBy channel\n");

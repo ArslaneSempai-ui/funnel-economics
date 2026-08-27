@@ -60,7 +60,7 @@ async function demarrer(): Promise<{ hote: string; arreter: () => void }> {
   const hote = `127.0.0.1:${port}`;
   for (let i = 0; i < 60; i++) {
     try {
-      await fetch(`http://${hote}/api/state`);
+      await fetch(`http://${hote}/api/etat`);
       return { hote, arreter: () => enfant.kill("SIGKILL") };
     } catch {
       await new Promise((r) => setTimeout(r, 250));
