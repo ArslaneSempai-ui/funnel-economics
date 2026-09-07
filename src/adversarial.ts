@@ -41,12 +41,12 @@ export const TRAPS: Trap[] = [
       "Signup conversion dropped from month 0 to month 5. Whatever shipped in month 3 " +
       "made things worse, and should be rolled back.",
     truth:
-      "Signup improved by two points in both channels — it was shipped deliberately and it " +
+      "Signup improved by two points in both channels; it was shipped deliberately and it " +
       "worked. Paid traffic went from a fifth of the mix to two thirds over the same period, " +
       "and paid converts at half the rate organic does. The mix moved, not the product.",
     caught:
       "Never compare an aggregate rate across periods when the mix can move. Split by " +
-      "channel first, every time — and if the channel split is not in your data, that is " +
+      "channel first, every time. And if the channel split is not in your data, that is " +
       "the finding.",
     evidence: () => {
       const users = generate();
@@ -70,7 +70,7 @@ export const TRAPS: Trap[] = [
     id: "T-SURVIVOR",
     name: "The last step looks best because only the best get there",
     appears:
-      "Retention is 76 % — the healthiest step in the funnel. Nothing to do here.",
+      "Retention is 76 %, the healthiest step in the funnel. Nothing to do here.",
     truth:
       "Retention is measured on people who already signed up, activated and paid. They are " +
       "the most committed users the funnel produces, three filters deep. A 76 % rate among " +
@@ -91,7 +91,7 @@ export const TRAPS: Trap[] = [
     id: "T-PRECISION",
     name: "A decimal place that is not there",
     appears:
-      "Retention moved from 75.9 % to 77.1 %. Up 1.2 points — the lifecycle work is paying off.",
+      "Retention moved from 75.9 % to 77.1 %. Up 1.2 points: the lifecycle work is paying off.",
     truth:
       "The interval on that rate is over three points wide. A 1.2-point move is inside it, " +
       "which means the two numbers are the same number as far as this sample can tell. The " +
@@ -104,7 +104,7 @@ export const TRAPS: Trap[] = [
       const [lo, hi] = wilson(r.converted, r.entered);
       return [
         `  retain: ${r.converted.toLocaleString("en-GB")} of ${r.entered.toLocaleString("en-GB")}`,
-        `  rate ${pc(r.rate)}, 95 % interval [${pc(lo)} – ${pc(hi)}] — ${(hi - lo) * 100 > 1.2 ? "wider" : "narrower"} than the 1.2-point "improvement"`,
+        `  rate ${pc(r.rate)}, 95 % interval [${pc(lo)} – ${pc(hi)}], ${(hi - lo) * 100 > 1.2 ? "wider" : "narrower"} than the 1.2-point "improvement"`,
       ];
     },
   },
@@ -134,7 +134,7 @@ export const TRAPS: Trap[] = [
       return [
         `  month 0:  ${pc(signups(m0) / m0.length)} of ${m0.length.toLocaleString("en-GB")} = ${signups(m0).toLocaleString("en-GB")} signups`,
         `  month ${SCENARIO.months - 1}:  ${pc(signups(mN) / mN.length)} of ${mN.length.toLocaleString("en-GB")} = ${signups(mN).toLocaleString("en-GB")} signups`,
-        `  (this trap runs on a variant where traffic grows 18 % a month — the published funnel is flat)`,
+        `  (this trap runs on a variant where traffic grows 18 % a month; the published funnel is flat)`,
       ];
     },
   },
@@ -160,7 +160,7 @@ if (isMain(import.meta)) {
   console.log(`\n${TRAPS.length} funnels built to mislead\n`);
 
   for (const t of TRAPS) {
-    console.log(`── ${t.id} — ${t.name}`);
+    console.log(`── ${t.id}: ${t.name}`);
     console.log(`\n   Appears to say:  ${t.appears.replace(/\s+/g, " ")}`);
     console.log(`\n   Actually:        ${t.truth.replace(/\s+/g, " ")}\n`);
     for (const line of t.evidence()) console.log(line);

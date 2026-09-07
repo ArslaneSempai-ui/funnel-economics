@@ -31,12 +31,12 @@ const worst = priced[priced.length - 1]!;
 
 const finding =
   `**The finding.** The best and worst places to spend on this funnel differ by ` +
-  `**${(best.perDollar / worst.perDollar).toFixed(0)}×** — \`${best.step}\` returns ` +
+  `**${(best.perDollar / worst.perDollar).toFixed(0)}×**: \`${best.step}\` returns ` +
   `${best.perDollar.toFixed(1)}× the money put into it, \`${worst.step}\` returns ` +
   `${worst.perDollar.toFixed(1)}×. A funnel chart cannot tell you that, and not because you ` +
   `are reading it wrong: it carries **no costs and no downstream volumes**, which are the ` +
-  `only two facts that decide. Change one belief about what a fix costs — nothing about the ` +
-  `users, not a single bar on the chart — and the order changes.`;
+  `only two facts that decide. Change one belief about what a fix costs (nothing about the ` +
+  `users, not a single bar on the chart), and the order changes.`;
 
 const funnelTable = table(
   ["Step", "Entered", "Converted", "Rate", "95 % interval", "Width, pts"],
@@ -49,14 +49,14 @@ const funnelTable = table(
 const e = endToEnd(users);
 const w = worstStep(rates);
 const funnelNote =
-  `${n(e.retained)} of ${n(e.entered)} visits end up retained — **${pc(e.rate)}** ` +
+  `${n(e.retained)} of ${n(e.entered)} visits end up retained, **${pc(e.rate)}** ` +
   `[${(e.low * 100).toFixed(2)}–${(e.high * 100).toFixed(2)}].\n\n` +
   (w.worst === null
     ? "Worst step by rate: no step has enough observations behind it, so this sample cannot " +
       "name one and the tool refuses to."
     : `Worst step by rate: \`${w.worst.step}\` at ${pc(w.worst.rate)}. ` +
       (w.identifiable
-        ? "No other step's interval reaches it, so the ranking holds — which is not the usual case."
+        ? "No other step's interval reaches it, so the ranking holds, which is not the usual case."
         : `But \`${w.tied.map((t) => t.step).join("`, `")}\` overlap${w.tied.length === 1 ? "s" : ""} it. ` +
           `This sample cannot say which is worse, and the tool refuses to.`));
 
@@ -79,7 +79,7 @@ const reorder = (() => {
     `| | Order by return |\n|---|---|\n` +
     `| before | ${c.base.map((p) => "`" + p.step + "`").join(" → ")} |\n` +
     `| after | ${c.other.map((p) => "`" + p.step + "`").join(" → ")} |\n\n` +
-    `The ranking was never a property of the funnel. It is a property of the levers — and the ` +
+    `The ranking was never a property of the funnel. It is a property of the levers, and the ` +
     `levers are the part nobody writes down.`;
 })();
 
@@ -106,7 +106,7 @@ const sensitivity = (() => {
     `\n\n${inertes.join(" and ")} ${inertes.length === 1 ? "is" : "are"} editable on the screen ` +
     `and read by no line of the pricing, so ${inertes.length === 1 ? "its" : "their"} stability ` +
     `is a fact about the wiring rather than about the funnel. The table says so instead of ` +
-    `filing ${inertes.length === 1 ? "it" : "them"} under the same verdict as a real result — ` +
+    `filing ${inertes.length === 1 ? "it" : "them"} under the same verdict as a real result, ` +
     `which is the trap this repository spends a whole page naming.`;
   return `${t}\n\nThe revenue per customer scales every step equally, so it moves every figure ` +
     `on the page and changes nothing about which to fix first. That is the assumption a reader ` +
@@ -136,7 +136,7 @@ const baselines = (() => {
   const note = chart.step === tool.step
     ? `**The chart agrees with the analysis here, and that is worth saying plainly rather than ` +
       `hiding.** On this funnel a reader would have reached the same answer for free. What the ` +
-      `analysis adds is knowing *that* the chart is right — and the sweep above shows how little ` +
+      `analysis adds is knowing *that* the chart is right, and the sweep above shows how little ` +
       `has to change for it to stop being.`
     : `A chart would have picked \`${chart.step}\`, at ${chart.perDollar.toFixed(2)}× against ` +
       `${tool.perDollar.toFixed(2)}×.`;

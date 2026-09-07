@@ -28,7 +28,7 @@ export const INVENTORY: Inventory = [
     name: "step rates",
     provenance: "measured",
     what: "conversion at each step, with a 95 % interval",
-    note: "measured on the synthetic population below — see `TRUE_RATES`",
+    note: "measured on the synthetic population below; see `TRUE_RATES`",
   },
   {
     name: "worstStep",
@@ -74,7 +74,7 @@ export const INVENTORY: Inventory = [
     name: "LEVERS",
     provenance: "chosen",
     what: "what each fix costs, and how far it can move its step",
-    note: "the load-bearing choice: the ranking is a property of these, not of the funnel — and nobody publishes them",
+    note: "the load-bearing choice: the ranking is a property of these, not of the funnel, and nobody publishes them",
   },
   {
     name: "TRUE_RATES",

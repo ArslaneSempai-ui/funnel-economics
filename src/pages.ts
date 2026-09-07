@@ -108,7 +108,7 @@ window.LOCAL_POSE && window.LOCAL_POSE();
 ` + "</" + "script>\n";
 
 const BANNER = `<p class="renvoi" style="margin-bottom:1.5rem">
-This runs entirely in your browser — no server, nothing leaves your machine. The funnel is
+This runs entirely in your browser: no server, nothing leaves your machine. The funnel is
 <b>synthetic and seeded</b>. <b>Change what a fix costs, under "the ranking is not in the
 funnel", and watch the priority order invert</b> while the table above it does not move a
 pixel. <a href="https://github.com/ArslaneSempai-ui/funnel-economics">Source and method</a>.

@@ -79,7 +79,7 @@ const T = {
 
     pireTitre: "The weakest step",
     pireIdentifiable: (e, t) => `<b>${e}</b> at ${t}. No other step's interval reaches it, so the ranking holds.`,
-    pireAmbigu: (e, t, autres) => `<b>${e}</b> at ${t} — but ${autres} overlap${autres.includes(",") ? "" : "s"} its interval. <b>This sample cannot say which is worse</b>, and the tool refuses to.`,
+    pireAmbigu: (e, t, autres) => `<b>${e}</b> at ${t}, but ${autres} overlap${autres.includes(",") ? "" : "s"} its interval. <b>This sample cannot say which is worse</b>, and the tool refuses to.`,
 
     titreValeur: "What each fix is worth",
     valeurQuoi: "Priced by <b>re-running the funnel</b> with the improvement applied, not by multiplying rates on a page.",
@@ -94,16 +94,16 @@ const T = {
 
     voirChiffres: "Show every figure",
     titreLeviers: "The ranking is not in the funnel",
-    leviersQuoi: "Each lever has a cost and a ceiling — the two numbers nobody writes down.",
+    leviersQuoi: "Each lever has a cost and a ceiling: the two numbers nobody writes down.",
     colLevier: "lever", colCoutLevier: "cost to fix", colPlafond: "points available",
     ordreAvant: "current order",
     remise: "Reset the levers",
 
     suiteEntonnoir: "A chart stops here: it shows rates, never what a fix costs nor what it returns.",
-    suiteValeur: (best, worst, x) => `<b>The best and worst places to spend differ by a factor of ${x}</b> — ${best}× against ${worst}×. None of that is on the chart: no costs, no downstream volumes. <em>And the ranking does not even belong to the funnel. Try it below.</em>`,
+    suiteValeur: (best, worst, x) => `<b>The best and worst places to spend differ by a factor of ${x}</b>: ${best}× against ${worst}×. None of that is on the chart: no costs, no downstream volumes. <em>And the ranking does not even belong to the funnel. Try it below.</em>`,
     ordreDepart: "starting order", ordreMaintenant: "order now",
-    suiteChange: "<b>The order just changed.</b> Not one figure in the funnel moved — not a rate, not an interval, not a bar. Only a belief about what a fix costs. <em>The ranking was never in the funnel: it is in the levers, and the levers are the part nobody writes down.</em>",
-    suitePasChange: "The order has not moved yet. Try \"the page is tapped out\" — it is the most ordinary situation of the four and it is enough to invert everything.",
+    suiteChange: "<b>The order just changed.</b> Not one figure in the funnel moved: not a rate, not an interval, not a bar. Only a belief about what a fix costs. <em>The ranking was never in the funnel: it is in the levers, and the levers are the part nobody writes down.</em>",
+    suitePasChange: "The order has not moved yet. Try \"the page is tapped out\"; it is the most ordinary situation of the four and it is enough to invert everything.",
     reglageFin: "Set the levers by hand",
     sc: {
       depart: "The starting levers",
@@ -123,10 +123,10 @@ const T = {
     rangCourt: (r) => r === 1 ? "1st" : r === 2 ? "2nd" : r === 3 ? "3rd" : r + "th",
     rangsSuite: (levier, de, a) => `One lever changes price and the order of priorities inverts: `
       + `<b>${levier} falls from ${de} to ${a}</b>. The ranking does not live in the funnel, `
-      + `it lives in what the levers cost — which nobody writes down.`,
+      + `it lives in what the levers cost, which nobody writes down.`,
     rangsStable: "The ranking holds across all four scenarios: the order of priorities does not "
       + "depend on those beliefs.",
-    rangsReserve: "A rank has no scale. Two levers a hair apart read as first and second — "
+    rangsReserve: "A rank has no scale. Two levers a hair apart read as first and second; "
       + "the value is on each point, on hover.",
     scq: {
       depart: "back to the point of comparison",
@@ -222,7 +222,7 @@ function blocEntonnoir() {
     </tr></thead><tbody>${lignes}</tbody></table></div></details>
     <div class="ligne total">
       <span class="intitule">${esc(L.boutEnBout)}</span>
-      <span class="valeur">${nb(e.retained)} / ${nb(e.entered)} — ${pc(e.rate)}</span>
+      <span class="valeur">${nb(e.retained)} / ${nb(e.entered)}; ${pc(e.rate)}</span>
     </div>
   </section>`;
   /* Les bornes de l'intervalle sont dessinées mais écrites nulle part : le survol est le
@@ -259,7 +259,7 @@ function blocValeur() {
   const max = Math.max(...etat.priced.map((p) => p.perDollar));
   const jauges = etat.priced.map((p, i) => `<div class="jauge${i === 0 ? " gagnant" : ""}">
     <div class="etiquette">
-      <b>${esc(p.step)} <small>— ${esc(etat.levers[p.step].what)}</small></b>
+      <b>${esc(p.step)}<small>, ${esc(etat.levers[p.step].what)}</small></b>
       <span class="valeur">${p.perDollar.toFixed(2)}×</span>
     </div>
     <div class="piste"><div class="remplissage" style="width:${Math.max(2, (p.perDollar / max) * 100).toFixed(1)}%"></div></div>
@@ -304,7 +304,7 @@ function blocLeviers() {
   const champs = etat.priced.map((p) => {
     const l = etat.levers[p.step];
     return `<div>
-      <label for="cost-${p.step}">${esc(p.step)} — ${esc(L.colCoutLevier)}</label>
+      <label for="cost-${p.step}">${esc(p.step)}, ${esc(L.colCoutLevier)}</label>
       <input type="text" inputmode="decimal" id="cost-${p.step}" data-step="${p.step}" data-champ="cost"
         value="${Math.round(l.cost)}" />
       <label for="ceil-${p.step}" style="margin-top:8px">${esc(L.colPlafond)}</label>

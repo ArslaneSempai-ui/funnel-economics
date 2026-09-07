@@ -214,13 +214,13 @@ export function verdict(priced: Priced[]): string {
   const leakiest = priced.find((p) => p.leakRank === 1)!;
   const money = (x: number) => "$" + Math.round(x).toLocaleString("en-GB");
 
-  const spread = `The best and worst places to spend differ by **${(best.perDollar / worst.perDollar).toFixed(0)}×** ` +
-    `— \`${best.step}\` returns ${best.perDollar.toFixed(1)}× the money put into it, \`${worst.step}\` returns ` +
+  const spread = `The best and worst places to spend differ by **${(best.perDollar / worst.perDollar).toFixed(0)}×**` +
+    `: \`${best.step}\` returns ${best.perDollar.toFixed(1)}× the money put into it, \`${worst.step}\` returns ` +
     `${worst.perDollar.toFixed(1)}×. Nothing on a funnel chart distinguishes them: it carries no costs and no ` +
     `downstream volumes, so the two facts that decide are the two it does not contain.`;
 
   const chart = best.step === leakiest.step
-    ? ` Here the chart happens to point at the right step, which is luck rather than method — ` +
+    ? ` Here the chart happens to point at the right step, which is luck rather than method: ` +
       `see the reordering below, where the same chart points at a different one.`
     : ` The chart's worst step, \`${leakiest.step}\`, is ${(best.perDollar / leakiest.perDollar).toFixed(1)}× ` +
       `worse value than \`${best.step}\`.`;
@@ -260,7 +260,7 @@ if (isMain(import.meta)) {
     console.log("The same funnel, one lever believed differently\n");
     console.log(
       `  signup is now ${money(PAGE_EPUISEE.cost)} for ${pts(PAGE_EPUISEE.ceiling)} rather than ` +
-      `${money(LEVERS.signup.cost)} for ${pts(LEVERS.signup.ceiling)} —`);
+      `${money(LEVERS.signup.cost)} for ${pts(LEVERS.signup.ceiling)}:`);
     console.log("  a page that has already been rebuilt twice. Nothing else changes.\n");
     console.log("  order by return, before:  " + c.base.map((p) => p.step).join(" → "));
     console.log("  order by return, after:   " + c.other.map((p) => p.step).join(" → "));
@@ -272,7 +272,7 @@ if (isMain(import.meta)) {
 
   console.log(
     "\nPriced by re-running the funnel, not by multiplying rates on a page. The two agree only" +
-    "\nwhen the steps are independent of each other — which they are in this model and are not" +
+    "\nwhen the steps are independent of each other, which they are in this model and are not" +
     "\nin life, and that limitation is stated rather than hidden behind a spreadsheet.\n",
   );
 }

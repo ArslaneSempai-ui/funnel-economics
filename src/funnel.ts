@@ -130,18 +130,18 @@ if (isMain(import.meta)) {
 
   const e = endToEnd(users);
   console.log(
-    `\nEnd to end: ${e.retained.toLocaleString("en-GB")} of ${e.entered.toLocaleString("en-GB")} ` +
-    `— ${pc(e.rate)} [${(e.low * 100).toFixed(2)}–${(e.high * 100).toFixed(2)}]`,
+    `\nEnd to end: ${e.retained.toLocaleString("en-GB")} of ${e.entered.toLocaleString("en-GB")}; ` +
+    `${pc(e.rate)} [${(e.low * 100).toFixed(2)}–${(e.high * 100).toFixed(2)}]`,
   );
 
   const w = worstStep(rates);
   console.log(
     w.worst === null
-      ? `\nWorst step by rate: no step has ${ENOUGH} observations behind it — this sample ` +
+      ? `\nWorst step by rate: no step has ${ENOUGH} observations behind it; this sample ` +
         `cannot name one, and will not.`
       : `\nWorst step by rate: ${w.worst.step} at ${pc(w.worst.rate)}.` +
         (w.identifiable
-          ? " No other step's interval reaches it — the ranking holds."
+          ? " No other step's interval reaches it; the ranking holds."
           : ` But ${w.tied.map((t) => t.step).join(", ")} overlap${w.tied.length === 1 ? "s" : ""} it. ` +
             `This sample cannot say which is worse.`),
   );
@@ -159,7 +159,7 @@ if (isMain(import.meta)) {
 
   console.log(
     "\nPaid converts worse at the top and better at the bottom. That is the ordinary shape" +
-    "\nof paid acquisition — and it means the aggregate rate moves whenever the mix moves," +
+    "\nof paid acquisition, and it means the aggregate rate moves whenever the mix moves," +
     "\nfor reasons that have nothing to do with the product. See `npm run adversarial`.\n",
   );
 }
