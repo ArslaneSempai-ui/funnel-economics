@@ -211,9 +211,9 @@ chart, a budget, or nothing at all.
 <!-- figures:provenance -->
 **4 measured**, **3 assumed**, **4 chosen**. What each kind means, and what you are entitled to ask of it:
 
-- **measured** — running the code in this repository produces it. *run it yourself — the draws are seeded.*
-- **assumed** — an input nobody here can know; yours to supply. *put your own figure in, and read the band around it.*
-- **chosen** — my judgement and nothing else. *check whether the sweep says it decides anything.*
+- **measured**: running the code in this repository produces it. *run it yourself; the draws are seeded.*
+- **assumed**: an input nobody here can know; yours to supply. *put your own figure in, and read the band around it.*
+- **chosen**: my judgement and nothing else. *check whether the sweep says it decides anything.*
 
 | Kind | Name | What it is | Note |
 |---|---|---|---|
